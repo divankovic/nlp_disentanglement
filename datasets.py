@@ -1,42 +1,61 @@
-import os
-import io
-import json
-import numpy as np
-from collections import defaultdict
+from sklearn.datasets import fetch_20newsgroups
 from torch.utils.data import Dataset
-from torch.utils.data.dataset import T_co
+from preprocess.text_preprocessing import clean_text, tokenize
 
 
-class Pubmed(Dataset):
-    def __init__(self, data_dir, split, **kwargs):
-        super().__init__()
-        self.data_dir = data_dir
-        self.data_file = 'corpus.json'
-        self.split = split
-        self.max_sequence_length = kwargs.get('max_sequence_length', 2000)
-        # note - 2070 is the 95th percentile of the abstract length
-        # minimum times for word occurence
-        self.min_occ = kwargs.get('min_occ', 3)
-        self._load_data(fields=['abstract_raw'])
+# contains loader for different datasets used in experiments
+# setup 20NewsGroups, IMDB first
 
-    def __len__(self) -> int:
+class SimpleTextDataset(Dataset):
+    def __init__(self, data):
+        self.data = data
+
+    def __len__(self):
         return len(self.data)
 
-    def __getitem__(self, index: int) -> T_co:
-        return self.data[index]
-
-    def _load_data(self, fields):
-        with open(os.path.join(self.data_dir, self.data_file),'r') as file:
-            self.data = json.load(file)
-        # filtering
-        new_data = []
-        for d in self.data:
-            d_new = {}
-            for field in fields:
-                d_new[field] = d[field]
-            new_data.append(d_new)
-
-        self.data = new_data
+    def __getitem__(self, idx):
+        return self.data[idx]
 
 
+class DatasetLoader:
 
+    def load_dateset(self, dataset):
+        """
+        Parameters
+        ----------
+        dataset - dataset name
+
+        Returns
+        -------
+        dataset - dict{train:Dataset, test:Dataset}
+        """
+        if dataset == '20newsgroups':
+            return self.load_20newsgroups()
+        elif dataset == 'imdb':
+            pass
+        elif dataset == 'beerreviews':
+            pass
+        elif dataset == 'mnist':
+            # just for testing purposes
+            pass
+
+    # 20NewsGroups
+    # The dataset contains 20000 messages collected from 20 different
+    # Usenet newsgroups (1000 messages from each group):
+    #
+    # | alt.atheism           | soc.religion.christian   | comp.windows.x     | sci.crypt
+    # | talk.politics.guns    | comp.sys.ibm.pc.hardware | rec.autos          | sci.electronics
+    # | talk.politics.mideast | comp.graphics            | rec.motorcycles    | sci.space
+    # | talk.politics.misc    | comp.os.ms-windows.misc  | rec.sport.baseball | sci.med
+    # | talk.religion.misc    | comp.sys.mac.hardware    | rec.sport.hockey   | misc.forsale
+    def load_20newsgroups(self, data_dir='resources/datasets/20_newsgroups'):
+        splits = ['train', 'test']
+        data = {}
+        for split in splits:
+            dataset = fetch_20newsgroups(data_home=data_dir, subset=split, remove=('headers', 'footers', 'quotes'))
+            examples = []
+            for (text, target) in zip(dataset.data, dataset.target):
+                examples.append({'text': text, 'label': dataset.target_names[target]})
+            data[split] = examples
+
+        return data['train'], data['test']

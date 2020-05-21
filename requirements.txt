@@ -1,4 +1,7 @@
 numpy
+gensim
 spacy
+sklearn
+tensorboardX
 torch
 torchvision

@@ -1,4 +1,5 @@
 import torch.nn as nn
+import gensim
 
 
 class Flatten3D(nn.Module):
@@ -21,3 +22,8 @@ class View(nn.Module):
 
     def forward(self, tensor):
         return tensor.view(self.size)
+
+# TODO - alternatively - train own embeddings, or a nn embedding layer which is trained together with the network
+def load_embeddings(path, binary=True):
+    model = gensim.models.KeyedVectors.load_word2vec_format(path, binary=binary)
+    return model

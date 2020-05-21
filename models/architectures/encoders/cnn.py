@@ -1,7 +1,7 @@
 import torch.nn as nn
 from utils.nn_utils import Flatten3D
 
-
+# TODO - research how cnn's were used on text
 class ConvEncoder(nn.Module):
     def __init__(self, input_dim, latent_dim, nc=1):
         # nc = number of channels, is 1 for textual data usually

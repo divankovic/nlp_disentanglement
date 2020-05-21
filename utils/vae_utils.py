@@ -16,7 +16,7 @@ def reconstruction_loss(x_recon, x, distribution):
         recon_loss = F.binary_cross_entropy(x_recon, x, reduction='sum')
     elif distribution == 'categorical':
         recon_loss = F.cross_entropy(x_recon, x)
-    elif distribution == 'gaussian':
+    elif distribution == 'gauss':
         recon_loss = F.mse_loss(x_recon, x, reduction='sum')
     else:
         raise ValueError('only bernoulli and gaussian supported for reconstruction loss, received : %s' % distribution)
