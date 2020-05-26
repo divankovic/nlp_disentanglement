@@ -1,5 +1,6 @@
 numpy
 gensim
+pandas
 spacy
 sklearn
 tensorboardX

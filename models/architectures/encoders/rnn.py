@@ -34,3 +34,10 @@ class RNNEncoder(nn.Module):
             hidden = hidden.squeeze()
 
         return self.mu(hidden), self.logvar(hidden)
+
+
+class TextModel(nn.Module):
+    # rnn + custom embedding layer module
+    # TODO
+    def __init__(self, vocab, args, initrange=0.1):
+        pass

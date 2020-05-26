@@ -2,12 +2,12 @@ import torch
 from torchvision.utils import save_image
 import os
 
+
 class VAETrainer:
-    # TODO - add model saving
     # TODO - customize experiments - load all parameters from configs
 
     def __init__(self, model, device, train_loader, test_loader, save_model_path=None, writer=None, log_interval=10,
-                 test_epoch=1):
+                 test_epoch=1, probtorch=False):
         self.model = model
         self.device = device
         self.train_loader = train_loader
@@ -16,6 +16,7 @@ class VAETrainer:
         self.test_epoch = test_epoch
         self.save_model_path = save_model_path
         self.writer = writer
+        self.probtorch = probtorch
 
     def run(self, optimizer, epochs, sample_every=0):
         for epoch in range(1, epochs + 1):
@@ -24,7 +25,7 @@ class VAETrainer:
                 self.test(epoch)
 
             if sample_every != 0 and epoch % sample_every == 0:
-                # sample some instances from the VAE model and save them
+                # sample some instances from the VAE model_0 and save them
                 # for mnist - TODO - customize this
                 with torch.no_grad():
                     sample = torch.randn(64, 20).to(self.device)
@@ -34,17 +35,28 @@ class VAETrainer:
 
         if self.save_model_path:
             # save checkpoint
-            torch.save(self.model.state_dict(), os.path.join(self.save_model_path, 'model'))
+            torch.save(self.model.state_dict(), os.path.join(self.save_model_path, 'model_0.pt'))
             print("Model saved at %s" % self.save_model_path)
 
     def train(self, epoch, optimizer):
         self.model.train()
         train_loss = 0
+        batch_size = self.train_loader.batch_size
         for batch_idx, data in enumerate(self.train_loader):
             data = data.to(self.device)
             optimizer.zero_grad()
-            recon_batch, mu, logvar = self.model(data)
-            loss = self.model.loss_function(recon_batch, data, mu, logvar)
+
+            if self.probtorch:
+                if len(data) != batch_size:
+                    # hfvae needs complete batches to work
+                    continue
+                data = data.cuda()
+                q, p = self.model(data)
+                loss = self.model.loss_function(q, p, len(self.train_loader.dataset), len(data))
+            else:
+                recon_batch, mu, logvar = self.model(data)
+                loss = self.model.loss_function(recon_batch, data, mu, logvar)
+
             loss.backward()
             train_loss += loss.item()
             optimizer.step()
@@ -63,10 +75,19 @@ class VAETrainer:
         self.model.eval()
         test_loss = 0
         with torch.no_grad():
+            batch_size = self.train_loader.batch_size
             for i, data in enumerate(self.test_loader):
                 data = data.to(self.device)
-                recon_batch, mu, logvar = self.model(data)
-                test_loss += self.model.loss_function(recon_batch, data, mu, logvar).item()
+                if self.probtorch:
+                    if len(data)!= batch_size:
+                        # hfvae needs complete batches to work
+                        continue
+                    data = data.cuda()
+                    q, p = self.model(data)
+                    test_loss += self.model.loss_function(q, p, len(self.test_loader.dataset), len(data)).item()
+                else:
+                    recon_batch, mu, logvar = self.model(data)
+                    test_loss += self.model.loss_function(recon_batch, data, mu, logvar).item()
                 # if i == 0:
                 #     # TODO - also customize this
                 #     n = min(data.size(0), 8)

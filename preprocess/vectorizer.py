@@ -1,6 +1,6 @@
 import json
 from math import ceil
-
+from collections import Counter
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -13,11 +13,12 @@ class Vectorizer:
     Used for extracting BoW or word2vec features.
     """
 
-    def __init__(self, min_seq_length=10, max_sequence_length=30, min_occ=1, unknown='unk'):
+    def __init__(self, min_seq_length=10, max_sequence_length=30, min_occ=1, vocab_size=None, unknown='unk'):
         self.max_sequence_length = max_sequence_length
         self.min_sequence_length = min_seq_length
         self.min_occ = min_occ
         self.unknown = 'unk'
+        self.vocab_size = vocab_size
 
     def load_vocab(self, vocab_path):
         print('Loading vocabulary from %s' % vocab_path)
@@ -28,7 +29,8 @@ class Vectorizer:
         self.vocab_size = len(self.word2idx)
 
     def build_vocab(self, data, vocab_path):
-        count_vectorizer = CountVectorizer(tokenizer=clean_text, min_df=self.min_occ, token_pattern=None)
+        count_vectorizer = CountVectorizer(tokenizer=clean_text, min_df=self.min_occ, token_pattern=None,
+                                           max_features=self.vocab_size)
         count_vectorizer.fit(data)
         self.word2idx = count_vectorizer.vocabulary_
 
@@ -45,11 +47,11 @@ class Vectorizer:
 
     def extract_embeddings(self, model):
         """
-        Extracts word embeddings from the data using the model.
-        Note : if the word is not in the model, then it is randomly initalized.
+        Extracts word embeddings from the data using the model_0.
+        Note : if the word is not in the model_0, then it is randomly initalized.
         Parameters
         ----------
-        model - word to embedding model (gensim model)
+        model_0 - word to embedding model_0 (gensim model_0)
         """
         print('Loading embeddings...')
         self.embedding_size = model.vector_size
@@ -63,7 +65,7 @@ class Vectorizer:
                 # initialize randomly
                 self.embeddings[i] = np.random.randn(self.embedding_size)
 
-        print('Found %d words in the embedding model out of %d in the vocabulary.' % (found, self.vocab_size))
+        print('Found %d words in the embedding model_0 out of %d in the vocabulary.' % (found, self.vocab_size))
 
     def text_to_sequences(self, data, pad=True, maxlen_ratio=None):
         texts_tokenized = list(
@@ -76,7 +78,7 @@ class Vectorizer:
             lengths = [len(text) for text in texts_tokenized]
             self.max_sequence_length = int(ceil(np.percentile(lengths, maxlen_ratio * 100)))
             print('Cutting off sequences at %dth percentile, which is %d words' % (
-                maxlen_ratio*100, self.max_sequence_length))
+                maxlen_ratio * 100, self.max_sequence_length))
         sequences = [seq[:self.max_sequence_length] for seq in sequences if len(seq) > self.min_sequence_length]
 
         if pad:
@@ -84,6 +86,17 @@ class Vectorizer:
                 sequence.extend([self.word2idx[self.unknown]] * (self.max_sequence_length - len(sequence)))
 
         return sequences
+
+    def text_to_BoW(self, data):
+        bow = np.zeros([len(data), self.vocab_size])
+        texts_tokenized = list(
+            map(lambda s: [self.unknown if word not in self.word2idx else word for word in clean_text(s)],
+                data))
+        sequences = list(map(lambda s: [self.word2idx[word] for word in s], texts_tokenized))
+        for (i, sequence) in enumerate(sequences):
+            bow[i][sequence] = 1
+
+        return bow
 
     def text_to_embeddings(self, data, pad=True, maxlen_ratio=None, aggregation='mean'):
         """
@@ -108,3 +121,46 @@ class Vectorizer:
             vectors = np.mean(vectors, axis=1)
 
         return vectors
+
+    class SimpleSequenceVocab:
+        """
+        Used for experiments with text-generation setup.
+        No text preprocessing
+        """
+
+        def __init__(self, path):
+            self.word2idx = {}
+            self.idx2word = []
+
+            with open(path) as f:
+                for line in f:
+                    w = line.split()[0]
+                    self.word2idx[w] = len(self.word2idx)
+                    self.idx2word.append(w)
+            self.size = len(self.word2idx)
+
+            self.pad = self.word2idx['<pad>']
+            self.go = self.word2idx['<go>']
+            self.eos = self.word2idx['<eos>']
+            self.unk = self.word2idx['<unk>']
+            self.blank = self.word2idx['<blank>']
+
+        @staticmethod
+        def build(sents, path, size):
+            v = ['<pad>', '<go>', '<eos>', '<unk>', '<blank>']
+            words = [w for s in sents for w in s]
+            cnt = Counter(words)
+            n_unk = len(words)
+            for w, c in cnt.most_common(size):
+                v.append(w)
+                n_unk -= c
+            cnt['<unk>'] = n_unk
+
+            with open(path, 'w') as f:
+                for w in v:
+                    f.write('{}\t{}\n'.format(w, cnt[w]))
+
+        @staticmethod
+        def strip_eos(sents):
+            return [sent[:sent.index('<eos>')] if '<eos>' in sent else sent
+                    for sent in sents]

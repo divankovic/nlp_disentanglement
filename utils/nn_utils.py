@@ -1,6 +1,16 @@
 import torch.nn as nn
 import gensim
 
+import random
+import numpy as np
+import torch
+
+
+def set_seed(seed):  # set the random seed for reproducibility
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
 
 class Flatten3D(nn.Module):
     def forward(self, x):
@@ -22,6 +32,7 @@ class View(nn.Module):
 
     def forward(self, tensor):
         return tensor.view(self.size)
+
 
 # TODO - alternatively - train own embeddings, or a nn embedding layer which is trained together with the network
 def load_embeddings(path, binary=True):

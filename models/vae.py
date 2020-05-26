@@ -1,3 +1,5 @@
+from abc import abstractmethod, ABC
+
 import torch
 from torch import nn
 import torch.nn.init as init
@@ -47,7 +49,9 @@ class VAE(nn.Module):
 
 
 class SequenceVAE(VAE):
-    # TODO - come back to this implementing and experimenting with simpler stuff on text (fc, cnn, ...)
+    # Text generation VAE
+    # TODO - come back to this after implementing and experimenting with simpler stuff on text (fc, cnn, ...)
+    # guideline - text-autoencoders repo
     def __init__(self, encoder, decoder, recon_distribution='categorical'):
         super().__init__()
 
@@ -60,7 +64,7 @@ class SequenceVAE(VAE):
         Parameters
         ----------
         x - tensor of shape [batch_size, seq_len]
-        kwargs - must have an embedding model under key 'embedding'
+        kwargs - must have an embedding model_0 under key 'embedding'
         """
         embedding = kwargs['embedding']
         x_embedded = embedding(x)

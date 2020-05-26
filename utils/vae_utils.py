@@ -24,6 +24,7 @@ def reconstruction_loss(x_recon, x, distribution):
     return recon_loss
 
 
+# TODO - extend to other continuous and discrete distributions
 def kl_divergence(mu, logvar):
     # TODO manually calculated for diagonal normal prior
     # consider extending with probabilistic programming libraries

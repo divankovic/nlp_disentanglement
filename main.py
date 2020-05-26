@@ -50,7 +50,7 @@ def main(args):
     writer = None
     if args.tensorboard_logging:
         writer = SummaryWriter(os.path.join(args.log_dir, ts))
-        writer.add_text("model", str(model))
+        writer.add_text("model_0", str(model))
         writer.add_text("args", str(args))
         writer.add_text("ts", ts)
 
