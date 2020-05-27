@@ -13,9 +13,12 @@ class HFVAE(VAE):
         return q, p
 
     def loss_function(self, q, p, N, B, alpha=0.1, NUM_SAMPLES=1):
-        # beta = () - leave default for now
+        # beta = (4.0, 1.0, 1.0, 0.1, 1.0)  # for prodlda
+        beta = (4.0, 1.0, 1.0, 7.0, 1.0)  # for nvdm
         bias = (N - 1) / (B - 1)
         if NUM_SAMPLES is None:
-            return -probtorch.objectives.marginal.elbo(q, p, sample_dim=None, batch_dim=0, alpha=alpha, bias=bias)
+            return -probtorch.objectives.marginal.elbo(q, p, sample_dim=None, batch_dim=0, alpha=alpha, beta=beta,
+                                                       bias=bias)
         else:
-            return -probtorch.objectives.marginal.elbo(q, p, sample_dim=0, batch_dim=1, alpha=alpha, bias=bias)
+            return -probtorch.objectives.marginal.elbo(q, p, sample_dim=0, batch_dim=1, alpha=alpha, beta=beta,
+                                                       bias=bias)

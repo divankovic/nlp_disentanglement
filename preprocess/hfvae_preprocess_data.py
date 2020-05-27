@@ -35,7 +35,7 @@ alphanum = re.compile('^[a-zA-Z0-9_]+$')
 def main(args):
     usage = "%prog train.jsonlist output_dir"
     parser = OptionParser(usage=usage)
-    parser.add_option('--label', dest='label', default=None,
+    parser.add_option('--label', dest='label', default='label',
                       help='field(s) to use as label (comma-separated): default=%default')
     parser.add_option('--test', dest='test', default='resources/datasets/20_newsgroups/json/test.json',
                       help='Test data (test.jsonlist): default=%default')

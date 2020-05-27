@@ -18,7 +18,7 @@ class HFVAEFCDecoder(nn.Module):
 
     def __init__(self, latent_dim, output_dim, batch_size):
         super().__init__()
-        self.main = ARCHITECTURES['HFVAE_PRODLDA'](latent_dim, output_dim)
+        self.main = ARCHITECTURES['HFVAE_NVDM'](latent_dim, output_dim)
         self.prior_mean = torch.zeros((batch_size, latent_dim)).cuda().double()
         self.prior_cov = torch.eye(latent_dim).cuda().double()
 
@@ -40,7 +40,7 @@ ARCHITECTURES = {
         nn.ReLU(),
         nn.Linear(400, output_dim)
     ),
-    'HFVAE_PRODLDA': lambda latent_dim, output_dim:
+    'HFVAE_NVDM': lambda latent_dim, output_dim:
     nn.Sequential(
         nn.Linear(latent_dim, output_dim),
         nn.Softmax(dim=-1)

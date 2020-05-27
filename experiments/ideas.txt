@@ -1,0 +1,2 @@
+VAE variants on (+changing parameters, enc/dec variants) - 20NewsGroups (or Reuters)
+                                                         - BeerReviews, RestaurantReviews (compare with pico paper)

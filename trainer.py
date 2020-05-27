@@ -6,12 +6,13 @@ import os
 class VAETrainer:
     # TODO - customize experiments - load all parameters from configs
 
-    def __init__(self, model, device, train_loader, test_loader, save_model_path=None, writer=None, log_interval=10,
+    def __init__(self, model, device, train_loader, test_loader, included_labels=False, save_model_path=None, writer=None, log_interval=10,
                  test_epoch=1, probtorch=False):
         self.model = model
         self.device = device
         self.train_loader = train_loader
         self.test_loader = test_loader
+        self.included_labels = included_labels
         self.log_interval = log_interval
         self.test_epoch = test_epoch
         self.save_model_path = save_model_path
@@ -35,7 +36,7 @@ class VAETrainer:
 
         if self.save_model_path:
             # save checkpoint
-            torch.save(self.model.state_dict(), os.path.join(self.save_model_path, 'model_0.pt'))
+            torch.save(self.model.state_dict(), os.path.join(self.save_model_path, 'model.pt'))
             print("Model saved at %s" % self.save_model_path)
 
     def train(self, epoch, optimizer):
@@ -43,6 +44,9 @@ class VAETrainer:
         train_loss = 0
         batch_size = self.train_loader.batch_size
         for batch_idx, data in enumerate(self.train_loader):
+            if self.included_labels:
+                data, labels = data
+
             data = data.to(self.device)
             optimizer.zero_grad()
 
@@ -77,6 +81,9 @@ class VAETrainer:
         with torch.no_grad():
             batch_size = self.train_loader.batch_size
             for i, data in enumerate(self.test_loader):
+                if self.included_labels:
+                    data, labels = data
+
                 data = data.to(self.device)
                 if self.probtorch:
                     if len(data)!= batch_size:

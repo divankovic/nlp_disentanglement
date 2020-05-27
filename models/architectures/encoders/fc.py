@@ -23,7 +23,7 @@ class FCEncoder(nn.Module):
 class HFVAEFCEncoder(FCEncoder):
     def __init__(self, input_dim, hidden_dim, latent_dim):
         super(HFVAEFCEncoder, self).__init__(input_dim, hidden_dim, latent_dim)
-        self.main = ARCHITECTURES['HFVAE_PRODLDA'](input_dim, hidden_dim)
+        self.main = ARCHITECTURES['HFVAE_NVDM'](input_dim, hidden_dim)
 
     def forward(self, x, num_samples=1):
         if num_samples is not None:
@@ -42,7 +42,7 @@ ARCHITECTURES = {
         nn.Linear(400, hidden_dim),
         nn.ReLU()
     ),
-    'HFVAE_PRODLDA': lambda input_dim, hidden_dim:
+    'HFVAE_NVDM': lambda input_dim, hidden_dim:
     nn.Sequential(
         nn.Linear(input_dim, hidden_dim),
         nn.ReLU()
