@@ -1,24 +1,42 @@
 import torch.nn as nn
 from utils.nn_utils import Flatten3D
+import torch.nn.functional as F
+import torch
 
-# TODO - research how cnn's were used on text
+
 class ConvEncoder(nn.Module):
-    def __init__(self, input_dim, latent_dim, nc=1):
-        # nc = number of channels, is 1 for textual data usually
-        # assert len(input_dim) == 2, 'A matrix for text representation (ex. stacked word embeddings)'
-        # assume input_dim similar to 50*300  (stacked 50 words, 300dim embeddings for each)
+    # The simplest case from paper - CNNs for sentence classification
+    def __init__(self, input_dim, embedding_dim, latent_dim, args):
+        # the total input will be something similar to Nx50x300x1  (stacked 50 words, 300dim embeddings for each)
+        # input_dim - number of words
+        # embedding_dim - the embedding_dimension
         super().__init__()
-        self.latent_dim = latent_dim
         self.input_dim = input_dim
-        self.main = cnn_architectures['simpleconv'](nc, latent_dim)
+        self.embedding_dim = embedding_dim
+        self.latent_dim = latent_dim
+        self.kernel_sizes = [3, 4, 5]
+        self.num_kernels = 32
+        self.convs = nn.ModuleList(
+            [nn.Conv2d(1, self.num_kernels, (kernel_size, embedding_dim)) for kernel_size in self.kernel_sizes])
+        self.dropout = nn.Dropout(args.dropout)
+        self.hidden = nn.Linear(len(self.kernel_sizes) * self.num_kernels, 2*self.latent_dim)
+        # in_channels, out_channels, kernel_size, stride, padding
 
     def forward(self, x):
-        z = self.main(x)
+        # x is of dim N x W x D - W- number of words, D - embedding dimension
+        x = x.unsqueeze(1)  # Nx1xWxD
+        x = [F.relu(conv(x)).squeeze(3) for conv in self.convss]  # [(N, num_kernels, W), ...]*len(kernel_sizes)
+        x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]  # [(N, num_kernels), ...]*len(kernel_sizes)
+        x = torch.cat(x, 1)
+        x = self.dropout(x)  # (N, len(kernel_sizes)*num_kernels)
+        z = self.hidden(x)  # (N, 2*latent_dim)
         mu = z[:, :self.latent_dim]
         logvar = z[:, self.latent_dim:]
         return mu, logvar
 
 
+# TODO : replace this
+# TODO : extra - check out Antonio's TCN implementation
 cnn_architectures = {
     'simpleconv': lambda nc, latent_dim:
     nn.Sequential(
@@ -62,6 +80,6 @@ cnn_architectures = {
                   nn.Conv2d(128, 256, 3, 2, 0),
                   nn.ReLU(True),
                   Flatten3D(),
-                  nn.Linear(256, latent_dim*2)
+                  nn.Linear(256, latent_dim * 2)
                   )
 }

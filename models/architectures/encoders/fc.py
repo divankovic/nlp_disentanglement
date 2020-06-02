@@ -25,6 +25,7 @@ class HFVAEFCEncoder(FCEncoder):
         super(HFVAEFCEncoder, self).__init__(input_dim, hidden_dim, latent_dim)
         self.main = ARCHITECTURES['HFVAE_NVDM'](input_dim, hidden_dim)
 
+    @expand_inputs
     def forward(self, x, num_samples=1):
         if num_samples is not None:
             x = x.expand(num_samples, *x.size())

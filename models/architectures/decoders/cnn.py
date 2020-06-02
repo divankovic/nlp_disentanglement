@@ -4,15 +4,22 @@ from torch import sigmoid
 
 
 class ConvDecoder(nn.Module):
-    def __init__(self, latent_dim, output_dim, nc=1):
-        # nc = number of channels, is 1 for textual data usually
-        # assert len(input_dim) == 2, 'A matrix for text representation (ex. stacked word embeddings)'
-        # assume input_dim similar to 50*300  (stacked 50 words, 300dim embeddings for each)
+    def __init__(self, latent_dim, output_dim, embedding_dim):
+        # the output input will be something similar to Nx50x300x1  (stacked 50 words, 300dim embeddings for each)
+        # output_dim - number of words
+        # embedding_dim - the embedding_dimension
+        # reverse form simple conv encoder
         super().__init__()
         self.latent_dim = latent_dim
         self.output_dim = output_dim
-        self.main = cnn_architectures['simpleconv'](nc, latent_dim)
+        self.embedding_dim = embedding_dim
+        self.kernel_sizes = [3, 4, 5]
+        self.num_kernels = 32
 
+        self.latent_to_hidden = nn.Linear(self.latent_dim, len(self.kernel_sizes)*self.num_kernels)
+        self.deconvs = nn.ModuleList(
+            [nn.ConvTranspose2d(self.num_kernels, 1, (kernel_size, embedding_dim)) for kernel_size in self.kernel_sizes])
+        # TODO - finish this up, with help from libs - need to reconstruct the input
     def forward(self, x):
         return sigmoid(self.main(x))
 

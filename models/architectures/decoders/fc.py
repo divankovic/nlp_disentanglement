@@ -26,7 +26,7 @@ class HFVAEFCDecoder(nn.Module):
         p = probtorch.Trace()
         z = p.multivariate_normal(self.prior_mean, self.prior_cov, value=q['z'], name='z')
         x_recon = self.main(z)
-        p.loss(lambda x_recon, x: -(torch.log(x_recon + 1e-8) * x + torch.log(1 - x_recon + 1e-8) * (1 - x)).sum(-1),
+        p.loss(lambda x_recon, x: -(torch.log(x_recon+1e-8)*x).sum(-1),
                x_recon, x, name='x')
         return p
 

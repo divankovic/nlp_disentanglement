@@ -3,6 +3,7 @@ from abc import abstractmethod, ABC
 import torch
 from torch import nn
 import torch.nn.init as init
+import gensim
 
 from utils.vae_utils import reparametrize, reconstruction_loss, kl_divergence
 
@@ -50,14 +51,24 @@ class VAE(nn.Module):
 
 class SequenceVAE(VAE):
     # Text generation VAE
-    # TODO - come back to this after implementing and experimenting with simpler stuff on text (fc, cnn, ...)
-    # guideline - text-autoencoders repo
-    def __init__(self, encoder, decoder, recon_distribution='categorical'):
+    def __init__(self, encoder, decoder, vocab_size, dropout, recon_distribution='categorical', embeddings=None):
+        # embeddings - path to pretrained embeddings
+        # if none, custom embeddings will be trained on the dataset
         super().__init__()
 
         self.encoder = encoder
         self.decoder = decoder
+        self.embedding_size = encoder.input_dim
+        self.vocab_size = vocab_size
         self.recon_distribution = recon_distribution
+        self.drop = nn.Dropout(dropout)
+
+        if embeddings:
+            model = gensim.models.KeyedVectors.load_word2vec_format('embeddings/biowordvec_pubmed_d200.vec.bin',
+                                                                    binary=True)
+            self.embedding = nn.Embedding.from_pretrained(torch.FloatTensor(model.vectors))
+        else:
+            self.embedding = nn.Embedding(self.vocab_size, self.embedding_size)
 
     def forward(self, x, **kwargs):
         """
@@ -66,10 +77,9 @@ class SequenceVAE(VAE):
         x - tensor of shape [batch_size, seq_len]
         kwargs - must have an embedding model_0 under key 'embedding'
         """
-        embedding = kwargs['embedding']
-        x_embedded = embedding(x)
-        mu, logvar = self.encode(x_embedded)
+        x = self.drop(self.embedding(x))
+        mu, logvar = self.encode(x)
         z = reparametrize(mu, logvar)
-        output = self.decoder(x_embedded, z)
-        return output, mu, logvar
+        logits, _ = self.decoder(x, z, self.drop)
+        return logits, mu, logvar
 

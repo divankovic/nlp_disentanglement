@@ -5,7 +5,7 @@ from torch import softmax
 # implemented for binary cross entropy loss with word indices in the vocabulary
 # alternative - reconstruct the word embeddings and use MSE as the error
 #             - reconstruct the word embeddings, find the nearest embedding and use that word, againd binary CE loss
-class RNNDencoder(nn.Module):
+class RNNDecoder(nn.Module):
     def __init__(self, latent_dim, input_dim, vocab_size, rnn_type, hidden_size, n_layers, dropout=0.2,
                  bidirectional=False):
         super().__init__()
@@ -18,13 +18,14 @@ class RNNDencoder(nn.Module):
         if rnn_type not in ['RNN', 'GRU', 'LSTM']:
             raise ValueError('rnn type %s not supported! Must be one of [RNN, GRU, LSTM]' % rnn_type)
 
-        self.hidden_factor = (2 if bidirectional else 1) * n_layers
-        self.latent2hidden = nn.Linear(latent_dim, hidden_size * self.hidden_factor)
+        self.hidden_factor = (2 if bidirectional else 1)
+        # self.latent2hidden = nn.Linear(latent_dim, hidden_size * self.hidden_factor)
         self.rnn = getattr(nn, rnn_type)(input_size=input_dim, hidden_size=hidden_size, num_layers=n_layers,
-                                         batch_first=True, dropout=dropout, bidirectional=bidirectional)
-        self.outputs2vocab = nn.Linear(hidden_size, vocab_size)
+                                         batch_first=True, dropout=dropout if n_layers>1 else 0, bidirectional=bidirectional)
+        self.latent2emb = nn.Linear(latent_dim, input_dim)
+        self.hidden2vocab = nn.Linear(hidden_size, vocab_size)
 
-    def forward(self, x, z):
+    def forward(self, x, z, dropout, hidden=None):
         """
         Parameters
         ----------
@@ -36,19 +37,12 @@ class RNNDencoder(nn.Module):
         Unnormalized logits of sentence words distribution probabilities of
         shape [batch_size, seq_len, vocab_size]
         """
-        hidden = self.latent2hidden(z)
-        batch_size = z.size()[0]
-        seq_len = x.size()[1]
-
-        if self.bidirectional or self.num_layers > 1:
-            # unflatten hidden state
-            hidden = hidden.view(self.hidden_factor, batch_size, self.hidden_size)
+        x = x + self.latent2emb(z)
+        if self.rnn_type == 'LSTM':
+            output, (hidden, _) = self.rnn(x, hidden)
         else:
-            hidden = hidden.unsqueeze(0)
+            output, hidden = self.rnn(x, hidden)
 
-        outputs, _ = self.rnn(x, hidden)
-        outputs = outputs.view(-1, self.hidden_size)
-        # project outputs to vocab
-        result = softmax(self.outputs2vocab(outputs))
-
-        return result.view(batch_size, seq_len, self.vocab_size)
+        output = dropout(output)
+        logits = self.hidden2vocab(output.view(-1, output.size(-1))).view(output.size(0), output.size(1), -1)
+        return logits, hidden
