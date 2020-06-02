@@ -35,6 +35,8 @@ class VAETrainer:
                                'results/mnist/sample_' + str(epoch) + '.png')
 
         if self.save_model_path:
+            if not os.path.exists(self.save_model_path):
+                os.makedirs(self.save_model_path)
             # save checkpoint
             torch.save(self.model.state_dict(), os.path.join(self.save_model_path, 'model.pt'))
             print("Model saved at %s" % self.save_model_path)
