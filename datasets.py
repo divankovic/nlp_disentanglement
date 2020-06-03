@@ -31,7 +31,7 @@ class DatasetLoader:
         """
         if dataset == '20newsgroups':
             return self.load_20newsgroups()
-        elif dataset == 'imdb':
+        elif dataset == 'reuters':
             pass
         elif dataset == 'beerreviews':
             pass
@@ -48,7 +48,7 @@ class DatasetLoader:
     # | talk.politics.mideast | comp.graphics            | rec.motorcycles    | sci.space
     # | talk.politics.misc    | comp.os.ms-windows.misc  | rec.sport.baseball | sci.med
     # | talk.religion.misc    | comp.sys.mac.hardware    | rec.sport.hockey   | misc.forsale
-    def load_20newsgroups(self, data_dir='resources/datasets/20_newsgroups', preprocess=False):
+    def load_20newsgroups(self, data_dir='resources/datasets/20_newsgroups_old'):
         splits = ['train', 'test']
         data = {}
         for split in splits:
@@ -58,14 +58,4 @@ class DatasetLoader:
                 examples.append({'text': text, 'label': dataset.target_names[target]})
             data[split] = examples
 
-        if preprocess:
-            self.custom_20newsgroups_preprocess(data)
-
         return data['train'], data['test']
-
-    def custom_20newsgroups_preprocess(self, data):
-        """
-            Custom preprocessing method based on the implementation from 'Structured disentangled representations' of
-            HFVAE on 20Newsgroups.
-        """
-

@@ -1,6 +1,5 @@
 # TODO - customize runner and trainers - extend to new classes
 #  TODO - load all parameters from configs - check out
-#  PyTorch VAE - in the next step, after the first couple experiments are done
 import argparse
 import os
 import time
@@ -19,6 +18,7 @@ from trainer import VAETrainer
 from utils.nn_utils import load_embeddings
 
 
+# TODO - needs update
 def main(args):
     args.cuda = args.cuda and torch.cuda.is_available()
     if torch.cuda.is_available():
@@ -31,7 +31,7 @@ def main(args):
     X_train, X_test = DatasetLoader().load_dateset('20newsgroups')
     X_train_texts, X_test_texts = [d['text'] for d in X_train], [d['text'] for d in X_test]
     vectorizer = Vectorizer(max_sequence_length=15, min_occ=5)
-    vectorizer.load_vocab('resources/datasets/20_newsgroups/vocab.json')
+    vectorizer.load_vocab('resources/datasets/20_newsgroups_old/vocab.json')
     vectorizer.extract_embeddings(load_embeddings('resources/embeddings/googlenews-vectors-300.bin'))
     X_train_vec, X_test_vec = vectorizer.text_to_embeddings(X_train_texts, maxlen_ratio=0.9), \
                               vectorizer.text_to_embeddings(X_test_texts, maxlen_ratio=0.9)

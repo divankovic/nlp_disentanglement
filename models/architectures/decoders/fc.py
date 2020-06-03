@@ -8,7 +8,7 @@ class FCDecoder(nn.Module):
     def __init__(self, latent_dim, output_dim):
         super().__init__()
         self.latent_dim = latent_dim
-        self.main = ARCHITECTURES['basic'][latent_dim, output_dim]
+        self.main = ARCHITECTURES['basic'](latent_dim, output_dim)
 
     def forward(self, z):
         return sigmoid(self.main(z))
@@ -27,7 +27,7 @@ class HFVAEFCDecoder(nn.Module):
         z = p.multivariate_normal(self.prior_mean, self.prior_cov, value=q['z'], name='z')
         x_recon = self.main(z)
         p.loss(lambda x_recon, x: -(torch.log(x_recon+1e-8)*x).sum(-1),
-               x_recon, x, name='x')
+               x_recon, x, name='x_recon')
         return p
 
 

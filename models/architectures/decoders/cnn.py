@@ -16,10 +16,12 @@ class ConvDecoder(nn.Module):
         self.kernel_sizes = [3, 4, 5]
         self.num_kernels = 32
 
-        self.latent_to_hidden = nn.Linear(self.latent_dim, len(self.kernel_sizes)*self.num_kernels)
+        self.latent_to_hidden = nn.Linear(self.latent_dim, len(self.kernel_sizes) * self.num_kernels)
         self.deconvs = nn.ModuleList(
-            [nn.ConvTranspose2d(self.num_kernels, 1, (kernel_size, embedding_dim)) for kernel_size in self.kernel_sizes])
-        # TODO - finish this up, with help from libs - need to reconstruct the input
+            [nn.ConvTranspose2d(self.num_kernels, 1, (kernel_size, embedding_dim)) for kernel_size in
+             self.kernel_sizes])
+        # TODO - finish this up
+
     def forward(self, x):
         return sigmoid(self.main(x))
 

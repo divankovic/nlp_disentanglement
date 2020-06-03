@@ -32,6 +32,7 @@ class HFVAEFCEncoder(FCEncoder):
         q = probtorch.Trace()
         h = self.main(x)
         q.normal(self.mu(h), torch.exp(self.logvar(h) * 0.5), name='z')
+
         return q
 
 

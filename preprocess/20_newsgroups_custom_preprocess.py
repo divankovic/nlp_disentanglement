@@ -37,7 +37,7 @@ def main(args):
     parser = OptionParser(usage=usage)
     parser.add_option('--label', dest='label', default='label',
                       help='field(s) to use as label (comma-separated): default=%default')
-    parser.add_option('--test', dest='test', default='resources/datasets/20_newsgroups/json/test.json',
+    parser.add_option('--test', dest='test', default='resources/datasets/20_newsgroups_old/json/test.json',
                       help='Test data (test.jsonlist): default=%default')
     parser.add_option('--train-prefix', dest='train_prefix', default='train',
                       help='Output prefix for training data: default=%default')
@@ -172,6 +172,9 @@ def preprocess_data(train_infile, test_infile, output_dir, train_prefix, test_pr
         doc_counts.update(set(tokens))
 
     print("Size of full vocabulary=%d" % len(word_counts))
+    # save train and test parsed to X_raw
+    # X_raw = train_parsed + test_parsed
+    # json.dump(X_raw, open(output_dir+'/X_raw.json', 'w'))
 
     print("Selecting the vocabulary")
     most_common = doc_counts.most_common()

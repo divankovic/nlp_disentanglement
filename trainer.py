@@ -1,12 +1,12 @@
 import torch
-# from torchvision.utils import save_image
 import os
+import time
 
 
 class VAETrainer:
-    # TODO - customize experiments - load all parameters from configs
 
-    def __init__(self, model, device, train_loader, test_loader, included_labels=False, save_model_path=None, writer=None, log_interval=10,
+    def __init__(self, model, device, train_loader, test_loader, included_labels=False, save_model_path=None,
+                 writer=None, log_interval=10,
                  test_epoch=1, probtorch=False):
         self.model = model
         self.device = device
@@ -19,20 +19,11 @@ class VAETrainer:
         self.writer = writer
         self.probtorch = probtorch
 
-    def run(self, optimizer, epochs, sample_every=0):
+    def run(self, optimizer, epochs):
         for epoch in range(1, epochs + 1):
             self.train(epoch, optimizer)
             if epoch % self.test_epoch == 0:
                 self.test(epoch)
-
-            if sample_every != 0 and epoch % sample_every == 0:
-                # sample some instances from the VAE model_0 and save them
-                # for mnist - TODO - customize this
-                with torch.no_grad():
-                    sample = torch.randn(64, 20).to(self.device)
-                    sample = self.model.decode(sample).cpu()
-                    save_image(sample.view(64, 1, 28, 28),
-                               'results/mnist/sample_' + str(epoch) + '.png')
 
         if self.save_model_path:
             if not os.path.exists(self.save_model_path):
@@ -88,7 +79,7 @@ class VAETrainer:
 
                 data = data.to(self.device)
                 if self.probtorch:
-                    if len(data)!= batch_size:
+                    if len(data) != batch_size:
                         # hfvae needs complete batches to work
                         continue
                     data = data.cuda()
@@ -97,13 +88,6 @@ class VAETrainer:
                 else:
                     recon_batch, mu, logvar = self.model(data)
                     test_loss += self.model.loss_function(recon_batch, data, mu, logvar).item()
-                # if i == 0:
-                #     # TODO - also customize this
-                #     n = min(data.size(0), 8)
-                #     comparison = torch.cat([data[:n],
-                #                             recon_batch.view(self.test_loader.batch_size, 1, 28, 28)[:n]])
-                #     save_image(comparison.cpu(),
-                #                'results/mnist/reconstruction_' + str(epoch) + '.png', nrow=n)
 
         test_loss /= len(self.test_loader.dataset)
         print('====> Test set loss: {:.4f}'.format(test_loss))

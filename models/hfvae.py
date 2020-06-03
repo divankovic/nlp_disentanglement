@@ -15,9 +15,10 @@ class HFVAE(VAE):
         p = self.decoder(x, q)
         return q, p
 
-    def loss_function(self, q, p, N, B, alpha=0.0, NUM_SAMPLES=1):
-        bias = (N - 1) / (B - 1)
+    def loss_function(self, q, p, N, batch_size, alpha=0.0, NUM_SAMPLES=1):
+        bias = (N - 1) / (batch_size - 1)
         if NUM_SAMPLES is None:
+            # wont work is NUM_SAMPLES is None
             return -probtorch.objectives.marginal.elbo(q, p, sample_dim=None, batch_dim=0, alpha=alpha, beta=self.beta,
                                                        bias=bias)
         else:

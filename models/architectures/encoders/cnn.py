@@ -36,7 +36,6 @@ class ConvEncoder(nn.Module):
 
 
 # TODO : replace this
-# TODO : extra - check out Antonio's TCN implementation
 cnn_architectures = {
     'simpleconv': lambda nc, latent_dim:
     nn.Sequential(

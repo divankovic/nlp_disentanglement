@@ -36,8 +36,3 @@ class RNNEncoder(nn.Module):
 
         hidden = torch.cat([hidden[-2], hidden[-1]], 1)
         return self.mu(hidden), self.logvar(hidden)
-
-
-class TextModel(nn.Module):
-    def __init__(self, vocab, args, initrange=0.1):
-        pass

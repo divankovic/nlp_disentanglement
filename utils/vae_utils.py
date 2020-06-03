@@ -1,11 +1,9 @@
 import torch
-from torch import nn
-import torch.optim as optim
 import torch.nn.functional as F
 
 
-# standard case - normal distrib, extend if neccessary
 def reparametrize(mu, logvar):
+    # standard case - normal distribution
     std = torch.exp(0.5 * logvar)
     eps = torch.randn_like(std)
     return mu + eps * std
@@ -24,8 +22,6 @@ def reconstruction_loss(x_recon, x, distribution):
     return recon_loss
 
 
-# TODO - extend to other continuous and discrete distributions
 def kl_divergence(mu, logvar):
-    # TODO manually calculated for diagonal normal prior
-    # consider extending with probabilistic programming libraries
+    # manually calculated for diagonal normal prior
     return -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())

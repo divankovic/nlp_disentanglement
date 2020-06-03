@@ -4,7 +4,7 @@ from torch import softmax
 
 # implemented for binary cross entropy loss with word indices in the vocabulary
 # alternative - reconstruct the word embeddings and use MSE as the error
-#             - reconstruct the word embeddings, find the nearest embedding and use that word, againd binary CE loss
+#             - reconstruct the word embeddings, find the nearest embedding and use that word, again binary CE loss
 class RNNDecoder(nn.Module):
     def __init__(self, latent_dim, input_dim, vocab_size, rnn_type, hidden_size, n_layers, dropout=0.2,
                  bidirectional=False):
