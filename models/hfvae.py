@@ -17,6 +17,8 @@ class HFVAE(VAE):
 
     def loss_function(self, q, p, N, batch_size, alpha=0.0, NUM_SAMPLES=1):
         bias = (N - 1) / (batch_size - 1)
+        # hint : for classic NVDM the loss function used should be
+        # probtorch.objectives.montecarlo.elbo(q,p,beta=1.0)
         if NUM_SAMPLES is None:
             # wont work is NUM_SAMPLES is None
             return -probtorch.objectives.marginal.elbo(q, p, sample_dim=None, batch_dim=0, alpha=alpha, beta=self.beta,

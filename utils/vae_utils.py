@@ -9,8 +9,10 @@ def reparametrize(mu, logvar):
     return mu + eps * std
 
 
-def reconstruction_loss(x_recon, x, distribution):
-    if distribution == 'bernoulli':
+def reconstruction_loss(x_recon, x, distribution=None):
+    if distribution is None:
+        recon_loss = -torch.sum((torch.log(x_recon)*x))
+    elif distribution == 'bernoulli':
         recon_loss = F.binary_cross_entropy(x_recon, x, reduction='sum')
     elif distribution == 'categorical':
         recon_loss = F.cross_entropy(x_recon, x)

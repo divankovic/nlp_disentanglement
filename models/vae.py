@@ -9,7 +9,7 @@ from utils.vae_utils import reparametrize, reconstruction_loss, kl_divergence
 
 
 class VAE(nn.Module):
-    def __init__(self, encoder, decoder, recon_distribution='bernoulli'):
+    def __init__(self, encoder, decoder, recon_distribution=None):
         super().__init__()
 
         self.encoder = encoder
@@ -23,6 +23,7 @@ class VAE(nn.Module):
         return self.decoder(z)
 
     def init_layers(self):
+        # not neccessary, done automatically in pytorch
         for block in self._modules:
             for m in self._modules[block]:
                 if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):

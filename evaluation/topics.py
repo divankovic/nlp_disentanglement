@@ -3,7 +3,9 @@ from gensim.models.coherencemodel import CoherenceModel
 from gensim.matutils import Dense2Corpus
 import numpy as np
 import itertools
+from collections import defaultdict
 from math import log
+import pickle
 
 
 def print_top_words(beta, idx2word, n_top_words=10):
@@ -82,69 +84,69 @@ def npmi_coherence_score_gensim(model, X_raw, X, idx2word, score_num=20):
 
     coherence_model = CoherenceModel(topics=topics, texts=X_raw, corpus=corpus,
                                      dictionary=Dictionary.from_corpus(corpus, idx2word),
-                                     coherence='c_v')
+                                     coherence='c_npmi', window_size=0)
     # return coherence_model.get_coherence()
     return coherence_model.get_coherence_per_topic()
 
 
-def calculate_word_frequencies(topics, corpus):
-    word_frequencies = {}
-    joint_word_frequencies = {}
-    words = set(np.array(topics).flatten())
-
+def calculate_word_frequencies(corpus, vocab, save_path):
+    if save_path is None:
+        raise ValueError('save_path must be provided')
+    word_frequencies = defaultdict(int)
+    joint_word_frequencies = defaultdict(int)
     N = len(corpus)
-    for w_i in words:
-        N_i = sum(map(lambda text: 1 if w_i in text else 0, corpus))
-        p_wi = N_i / N
-        word_frequencies[w_i] = p_wi
+    for i in range(len(corpus)):
+        print('Processing document %d out of %d' % (i, N))
+        doc = corpus[i]
+        doc_words = set(doc)
+        doc_words = [word for word in doc_words if word in vocab]
+        for word in doc_words:
+            word_frequencies[word] += 1
+        for wi, wj, in itertools.combinations(doc_words, 2):
+            joint_word_frequencies[(wi, wj)] += 1
+            joint_word_frequencies[(wj, wi)] += 1
 
-    for w_i, w_j in itertools.combinations(words):
-        N_ij = sum(map(lambda text: 1 if (w_i in text and w_j in text) else 0))
-        p_wiwj = N_ij / N
-        joint_word_frequencies[(w_i, w_j)] = p_wiwj
-        joint_word_frequencies[(w_j, w_i)] = p_wiwj
-
+    word_frequencies = {k: v / N for k, v in word_frequencies.items()}
+    joint_word_frequencies = {k: v / N for k, v in joint_word_frequencies.items()}
+    pickle.dump(word_frequencies, open(save_path + '/word_frequencies.pkl', 'wb'))
+    pickle.dump(joint_word_frequencies, open(save_path + '/jointword_frequencies.pkl', 'wb'))
     return word_frequencies, joint_word_frequencies
 
 
-def npmi_coherence_score(topics, corpus):
+def npmi_coherence_score(topics, word_frequencies, joint_word_frequencies):
     """
     Compute npmi score. Implemented guided by https://arxiv.org/abs/1812.05035, appendix A.
+    Average word similarity between all pairs of words in a topic. It is bounded by [-1, 1]
     Parameters
     ----------
     topics - (n_topics, top_words) array
-    corpus - 2d array - tokenized sequences of words in the corpus
+    corpus - 2d array or list of lists - tokenized sequences of words in the corpus
+    word_frequencies={w_i : p_wi}
+    joint_word_frequencies={(w_i, w_j):p_wi_wj}
 
     Returns
     -------
     NPMI scores per topic
     """
+    topics = np.array(topics)
     K = topics.shape[0]  # number of topics
     T = topics.shape[1]  # top words in a topic
-    word_frequencies, joint_word_frequencies = calculate_word_frequencies(topics, corpus)
-    # dictionaries; word_frequencies={w_i : p_wi}, joint_word_frequencies={(w_i, w_j):p_wi_wj}
 
     topic_coherences = []
-    for i in range(K):
+    for k in range(K):
         topic_coherence = 0
-        for j in range(T):
-            # npmi for each word in a topic
-            word_npmi = 0
-            w_j = topics[i][j]
-            for k in range(T):
-                if k == j: continue
-                w_k = topics[i][k]
-                p_wjwk = word_frequencies[(w_j, w_k)]
-                if (p_wjwk-0) < 1e-12:
-                    # the joint frequency is zero, skip
-                    continue
-                p_wj = word_frequencies[w_j]
-                p_wk = word_frequencies[w_k]
-                word_npmi += log(p_wjwk/(p_wj*p_wk)) / (-log(p_wjwk))
+        for w_i, w_j in itertools.combinations(topics[k], 2):
+            # npmi for each word pair in a topic
+            p_wiwj = joint_word_frequencies[(w_i, w_j)] if (w_i, w_j) in joint_word_frequencies else 0
+            if (p_wiwj - 0) < 1e-12:
+                # the joint frequency is zero, npmi is -1 : https://stats.stackexchange.com/questions/140935/how-does-the-logpx-y-normalize-the-point-wise-mutual-information
+                topic_coherence += -1
+                continue
+            p_wi = word_frequencies[w_i]
+            p_wj = word_frequencies[w_j]
+            topic_coherence += log(p_wiwj / (p_wi * p_wj)) / (-log(p_wiwj))
 
-            topic_coherence += word_npmi
-
-        topic_coherence = topic_coherence / T
+        topic_coherence = topic_coherence / (T * (T - 1) / 2)
         topic_coherences.append(topic_coherence)
 
     return topic_coherences

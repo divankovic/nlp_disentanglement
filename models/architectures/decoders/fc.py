@@ -5,20 +5,22 @@ import torch
 
 
 class FCDecoder(nn.Module):
-    def __init__(self, latent_dim, output_dim):
+    def __init__(self, latent_dim, output_dim, architecture='basic'):
         super().__init__()
         self.latent_dim = latent_dim
-        self.main = ARCHITECTURES['basic'](latent_dim, output_dim)
+        self.architecture = architecture
+        self.main = ARCHITECTURES[architecture](latent_dim, output_dim)
 
     def forward(self, z):
-        return sigmoid(self.main(z))
+        # return sigmoid(self.main(z))
+        return self.main(z)
 
 
 class HFVAEFCDecoder(nn.Module):
 
     def __init__(self, latent_dim, output_dim, batch_size):
         super().__init__()
-        self.main = ARCHITECTURES['HFVAE_NVDM'](latent_dim, output_dim)
+        self.main = ARCHITECTURES['NVDM'](latent_dim, output_dim)
         self.prior_mean = torch.zeros((batch_size, latent_dim)).cuda().double()
         self.prior_cov = torch.eye(latent_dim).cuda().double()
 
@@ -40,7 +42,7 @@ ARCHITECTURES = {
         nn.ReLU(),
         nn.Linear(400, output_dim)
     ),
-    'HFVAE_NVDM': lambda latent_dim, output_dim:
+    'NVDM': lambda latent_dim, output_dim:
     nn.Sequential(
         nn.Linear(latent_dim, output_dim),
         nn.Softmax(dim=-1)
