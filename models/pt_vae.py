@@ -44,6 +44,8 @@ class HFVAE(PTVAE):
             return -probtorch.objectives.marginal.elbo(q, p, sample_dim=0, batch_dim=1, alpha=alpha, beta=self.beta,
                                                        bias=bias)
 
+    # TODO - extend this to dimension-wise mutual information (I(x, zd))
+    # TODO - try computing the same thing using some library and compare the results
     def mutual_info(self, q, p, **kwargs):
         N = kwargs['N']
         batch_size = kwargs['batch_size']
