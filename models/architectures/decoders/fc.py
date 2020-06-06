@@ -36,11 +36,13 @@ class PTFCDecoder(nn.Module):
 class HFCDecoder(PTFCDecoder):
     # for structured (hierarchical) 2d latent representations
     def __init__(self, latent_dim, output_dim, batch_size, num_groups):
-        super(PTFCDecoder, self).__init__(latent_dim, output_dim, batch_size)
+        super().__init__(latent_dim, output_dim, batch_size)
+        if latent_dim % num_groups != 0:
+            raise ValueError('Latent_dim must be disible by num_groups!')
         self.num_groups = num_groups
-        self.group_dim = latent_dim / num_groups
+        self.group_dim = int(latent_dim / num_groups)
         self.prior_mean = torch.zeros((batch_size, self.group_dim)).cuda().double()
-        self.prior_cov = torch.eye(self.group_dim)
+        self.prior_cov = torch.eye(self.group_dim).cuda().double()
 
     def forward(self, x, q):
         p = probtorch.Trace()
@@ -53,6 +55,7 @@ class HFCDecoder(PTFCDecoder):
         latents = torch.cat(zs, -1)
         x_recon = self.main(latents)
         p.loss(lambda x_recon, x: -(torch.log(x_recon+1e-8)*x).sum(-1), x_recon, x, name='x_recon')
+        return p
 
 
 ARCHITECTURES = {

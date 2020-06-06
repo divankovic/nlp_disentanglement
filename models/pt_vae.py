@@ -44,4 +44,14 @@ class HFVAE(PTVAE):
             return -probtorch.objectives.marginal.elbo(q, p, sample_dim=0, batch_dim=1, alpha=alpha, beta=self.beta,
                                                        bias=bias)
 
-    # TODO : add mutual information function I(x, z) -- maybe also reconstruct I(x, zd) from it
+    def mutual_info(self, q, p, **kwargs):
+        N = kwargs['N']
+        batch_size = kwargs['batch_size']
+        bias = (N - 1) / (batch_size - 1)
+        sample_dim = 0
+        batch_dim = 1
+        z = [n for n in q.sampled() if n in p]
+        log_qz = q.log_joint(sample_dim, batch_dim, z)
+        log_joint_avg_qz, _, _ = q.log_batch_marginal(sample_dim, batch_dim, z, bias=bias)
+
+        return log_qz - log_joint_avg_qz
