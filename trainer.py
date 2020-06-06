@@ -54,7 +54,8 @@ class VAETrainer:
                 loss_item = loss.item()
 
                 # extra for HFVAE - mutual information
-                batch_mis.append(self.model.mutual_info(q, p, N=len(self.train_loader.dataset), batch_size=len(data)))
+                batch_mis.append(
+                    self.model.mutual_info(q, p, N=len(self.train_loader.dataset), batch_size=len(data)).item())
             else:
                 recon_batch, mu, logvar = self.model(data)
                 loss = self.model.loss_function(recon_batch, data, mu, logvar)
@@ -73,8 +74,7 @@ class VAETrainer:
         print('====> Epoch: {} Average loss: {:.4f}'.format(
             epoch, sum(batch_losses) / len(batch_losses)))
         if track_mutual_info:
-            print('====>         Average I(x,z): {:.4f}'.format(
-                epoch, sum(batch_mis) / len(batch_mis)))
+            print('====>         Average I(x,z): {:.4f}'.format(sum(batch_mis) / len(batch_mis)))
 
         if self.writer:
             self.writer.add_scalar('train loss', sum(batch_losses) / len(batch_losses), epoch)

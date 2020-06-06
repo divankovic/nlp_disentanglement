@@ -54,4 +54,4 @@ class HFVAE(PTVAE):
         log_qz = q.log_joint(sample_dim, batch_dim, z)
         log_joint_avg_qz, _, _ = q.log_batch_marginal(sample_dim, batch_dim, z, bias=bias)
 
-        return log_qz - log_joint_avg_qz
+        return (log_qz - log_joint_avg_qz).mean()
