@@ -1,6 +1,5 @@
 import torch
 import os
-import time
 
 
 class VAETrainer:
@@ -45,16 +44,19 @@ class VAETrainer:
 
             if self.probtorch:
                 if len(data) != batch_size:
-                    # hfvae needs complete batches to work
+                    # probtorch implementation needs complete batches to work
                     continue
                 q, p = self.model(data)
-                loss = self.model.loss_function(q, p, len(self.train_loader.dataset), len(data))
+                loss = self.model.loss_function(q, p, N=len(self.train_loader.dataset), batch_size=len(data))
+                # the loss is already normalized, no need to further divide it
+                loss_item = loss.item()
             else:
                 recon_batch, mu, logvar = self.model(data)
                 loss = self.model.loss_function(recon_batch, data, mu, logvar)
+                loss_item = loss.item() / len(data) # normalize by batch
 
             loss.backward()
-            batch_loss = loss.item() / len(data)
+            batch_loss = loss_item
             batch_losses.append(batch_loss)
             optimizer.step()
             if batch_idx % self.log_interval == 0:
@@ -85,7 +87,7 @@ class VAETrainer:
                         continue
                     q, p = self.model(data)
                     batch_losses.append(
-                        self.model.loss_function(q, p, len(self.test_loader.dataset), len(data)).item() / len(data))
+                        self.model.loss_function(q, p, N=len(self.test_loader.dataset), batch_size=len(data)).item())
                 else:
                     recon_batch, mu, logvar = self.model(data)
                     batch_losses.append(self.model.loss_function(recon_batch, data, mu, logvar).item() / len(data))

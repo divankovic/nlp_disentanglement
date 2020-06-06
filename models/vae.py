@@ -45,10 +45,6 @@ class VAE(nn.Module):
     def loss_function(self, x_recon, x, mu, logvar):
         return reconstruction_loss(x_recon, x, self.recon_distribution) + kl_divergence(mu, logvar)
 
-    def sample(self):
-        # implement sampling
-        pass
-
 
 class SequenceVAE(VAE):
     # Text generation VAE

@@ -21,9 +21,10 @@ class FCEncoder(nn.Module):
         return self.mu(h), self.logvar(h)
 
 
-class HFVAEFCEncoder(FCEncoder):
+class PTFCEncoder(FCEncoder):
+    # tuned to work with probtorch
     def __init__(self, input_dim, hidden_dim, latent_dim):
-        super(HFVAEFCEncoder, self).__init__(input_dim, hidden_dim, latent_dim)
+        super(PTFCEncoder, self).__init__(input_dim, hidden_dim, latent_dim)
         self.main = ARCHITECTURES['NVDM'](input_dim, hidden_dim)
 
     @expand_inputs
@@ -33,6 +34,27 @@ class HFVAEFCEncoder(FCEncoder):
         q = probtorch.Trace()
         h = self.main(x)
         q.normal(self.mu(h), torch.exp(self.logvar(h) * 0.5), name='z')
+
+        return q
+
+
+class HFCEncoder(PTFCEncoder):
+    # for structured (hierarchical) 2d latent representations
+    def __init__(self, input_dim, hidden_dim, latent_dim, num_groups):
+        super(PTFCEncoder, self).__init__(input_dim, hidden_dim, latent_dim)
+        self.num_groups = num_groups
+
+    @expand_inputs
+    def forward(self, x, num_samples=1):
+        if num_samples is not None:
+            x = x.expand(num_samples, *x.size())
+        q = probtorch.Trace()
+        h = self.main(x)
+        mu, logvar = self.mu(h), self.logvar(h)
+        group_dim = self.latent_dim / self.num_groups
+        for i in range(self.num_groups):
+            q.normal(mu[i * group_dim: ((i + 1) * group_dim)],
+                     torch.exp(logvar[i * group_dim: (i + 1) * group_dim] * 0.5), name='z_' + str(i))
 
         return q
 

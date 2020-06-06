@@ -16,7 +16,7 @@ class FCDecoder(nn.Module):
         return self.main(z)
 
 
-class HFVAEFCDecoder(nn.Module):
+class PTFCDecoder(nn.Module):
 
     def __init__(self, latent_dim, output_dim, batch_size):
         super().__init__()
@@ -24,13 +24,35 @@ class HFVAEFCDecoder(nn.Module):
         self.prior_mean = torch.zeros((batch_size, latent_dim)).cuda().double()
         self.prior_cov = torch.eye(latent_dim).cuda().double()
 
-    def forward(self, x, q, num_samples=1):
+    def forward(self, x, q):
         p = probtorch.Trace()
         z = p.multivariate_normal(self.prior_mean, self.prior_cov, value=q['z'], name='z')
         x_recon = self.main(z)
-        p.loss(lambda x_recon, x: -(torch.log(x_recon+1e-8)*x).sum(-1),
+        p.loss(lambda x_recon, x: -(torch.log(x_recon + 1e-8) * x).sum(-1),
                x_recon, x, name='x_recon')
         return p
+
+
+class HFCDecoder(PTFCDecoder):
+    # for structured (hierarchical) 2d latent representations
+    def __init__(self, latent_dim, output_dim, batch_size, num_groups):
+        super(PTFCDecoder, self).__init__(latent_dim, output_dim, batch_size)
+        self.num_groups = num_groups
+        self.group_dim = latent_dim / num_groups
+        self.prior_mean = torch.zeros((batch_size, self.group_dim)).cuda().double()
+        self.prior_cov = torch.eye(self.group_dim)
+
+    def forward(self, x, q):
+        p = probtorch.Trace()
+        zs = []
+        for i in range(self.num_groups):
+            z = p.multivariate_normal(loc=self.prior_mean, covariance_matrix=self.prior_cov, value=q['z_' + str(i)],
+                                      name='z_' + str(i))
+            zs.append(z)
+
+        latents = torch.cat(zs, -1)
+        x_recon = self.main(latents)
+        p.loss(lambda x_recon, x: -(torch.log(x_recon+1e-8)*x).sum(-1), x_recon, x, name='x_recon')
 
 
 ARCHITECTURES = {
