@@ -18,9 +18,9 @@ class FCDecoder(nn.Module):
 
 class PTFCDecoder(nn.Module):
 
-    def __init__(self, latent_dim, output_dim, batch_size):
+    def __init__(self, latent_dim, output_dim, batch_size, architecture='NVDM'):
         super().__init__()
-        self.main = ARCHITECTURES['NVDM'](latent_dim, output_dim)
+        self.main = ARCHITECTURES[architecture](latent_dim, output_dim)
         self.prior_mean = torch.zeros((batch_size, latent_dim)).cuda().double()
         self.prior_cov = torch.eye(latent_dim).cuda().double()
 
@@ -35,8 +35,8 @@ class PTFCDecoder(nn.Module):
 
 class HFCDecoder(PTFCDecoder):
     # for structured (hierarchical) 2d latent representations
-    def __init__(self, latent_dim, output_dim, batch_size, num_groups):
-        super().__init__(latent_dim, output_dim, batch_size)
+    def __init__(self, latent_dim, output_dim, batch_size, num_groups, architecture='NVDM'):
+        super().__init__(latent_dim, output_dim, batch_size, architecture)
         if latent_dim % num_groups != 0:
             raise ValueError('Latent_dim must be disible by num_groups!')
         self.num_groups = num_groups

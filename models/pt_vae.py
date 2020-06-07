@@ -59,7 +59,7 @@ class HFVAE(PTVAE):
 
         return (log_qz - log_joint_avg_qz).mean()
 
-    # TODO : test this out
+    # TODO : try this out
     def mutual_info_by_components(self, q, p, **kwargs):
         N = kwargs['N']
         batch_size = kwargs['batch_size']
@@ -70,7 +70,7 @@ class HFVAE(PTVAE):
         z = torch.cat(z, -1)
         mis = []
         for i in range(z.size()[-1]):
-            log_qz = q.log_join(sample_dim, batch_dim, z[..., i])
+            log_qz = q.log_joint(sample_dim, batch_dim, z[..., i])
             log_joint_avg_qz, _, _ = q.log_batch_marginal(sample_dim, batch_dim, z[..., i], bias=bias)
             mis.append((log_qz - log_joint_avg_qz).mean())
 
