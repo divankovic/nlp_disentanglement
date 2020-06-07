@@ -31,7 +31,7 @@ cnn_architectures = {
     nn.Sequential(
         # mnist example - modify for textual data
         nn.Linear(latent_dim, 256),  # B, 256
-        Unsqueeze3D(),  # B, 256,  1,  1
+        Unsqueeze3D(),  # B, 256,  a_0,  a_0
         nn.ReLU(True),
         nn.ConvTranspose2d(256, 64, 4),  # B,  64,  4,  4
         nn.ReLU(True),

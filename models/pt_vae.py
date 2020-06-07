@@ -1,6 +1,7 @@
 from models.vae import VAE
 import probtorch
 from torch import nn
+import torch
 
 
 # ProbTorch VAE implementations
@@ -57,3 +58,19 @@ class HFVAE(PTVAE):
         log_joint_avg_qz, _, _ = q.log_batch_marginal(sample_dim, batch_dim, z, bias=bias)
 
         return (log_qz - log_joint_avg_qz).mean()
+
+    def mutual_info_by_components(self, q, p, **kwargs):
+        N = kwargs['N']
+        batch_size = kwargs['batch_size']
+        bias = (N-1) / (batch_size-1)
+        sample_dim = 0
+        batch_dim = 1
+        z = [n for n in q.sampled if n in p]
+        z = torch.cat(z, -1)
+        mis = []
+        for i in range(z.size()[-1]):
+            log_qz = q.log_join(sample_dim, batch_dim, z[..., i])
+            log_joint_avg_qz, _, _ = q.log_batch_marginal(sample_dim, batch_dim, z[..., i], bias=bias)
+            mis.append((log_qz - log_joint_avg_qz).mean())
+
+        return mis

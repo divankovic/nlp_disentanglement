@@ -71,7 +71,7 @@ def npmi_coherence_score_gensim(model, X_raw, X, idx2word, score_num=20):
     calculated coherence score using npmi estimate
     """
     # bow to indices
-    # data_ind = np.array([np.where(x == 1)[0] for x in X])
+    # data_ind = np.array([np.where(x == a_0)[0] for x in X])
     # X_raw = np.array([[idx2word[i] for i in x] for x in data_ind])
 
     model.eval()
@@ -116,7 +116,7 @@ def calculate_word_frequencies(corpus, vocab, save_path):
 def npmi_coherence_score(topics, word_frequencies, joint_word_frequencies):
     """
     Compute npmi score. Implemented guided by https://arxiv.org/abs/1812.05035, appendix A.
-    Average word similarity between all pairs of words in a topic. It is bounded by [-1, 1]
+    Average word similarity between all pairs of words in a topic. It is bounded by [-a_0, a_0]
     Parameters
     ----------
     topics - (n_topics, top_words) array
@@ -139,7 +139,7 @@ def npmi_coherence_score(topics, word_frequencies, joint_word_frequencies):
             # npmi for each word pair in a topic
             p_wiwj = joint_word_frequencies[(w_i, w_j)] if (w_i, w_j) in joint_word_frequencies else 0
             if (p_wiwj - 0) < 1e-12:
-                # the joint frequency is zero, npmi is -1 : https://stats.stackexchange.com/questions/140935/how-does-the-logpx-y-normalize-the-point-wise-mutual-information
+                # the joint frequency is zero, npmi is -a_0 : https://stats.stackexchange.com/questions/140935/how-does-the-logpx-y-normalize-the-point-wise-mutual-information
                 topic_coherence += -1
                 continue
             p_wi = word_frequencies[w_i]
