@@ -18,9 +18,9 @@ class VAETrainer:
         self.writer = writer
         self.probtorch = probtorch
 
-    def run(self, optimizer, epochs):
+    def run(self, optimizer, epochs, track_mutual_info=True):
         for epoch in range(1, epochs + 1):
-            self.train(epoch, optimizer)
+            self.train(epoch, optimizer, track_mutual_info=track_mutual_info)
             if epoch % self.test_epoch == 0:
                 self.test(epoch)
 
@@ -54,8 +54,9 @@ class VAETrainer:
                 loss_item = loss.item()
 
                 # extra for HFVAE - mutual information
-                batch_mis.append(
-                    self.model.mutual_info(q, p, N=len(self.train_loader.dataset), batch_size=len(data)).item())
+                if track_mutual_info:
+                    batch_mis.append(
+                        self.model.mutual_info(q, p, N=len(self.train_loader.dataset), batch_size=len(data)).item())
             else:
                 recon_batch, mu, logvar = self.model(data)
                 loss = self.model.loss_function(recon_batch, data, mu, logvar)
