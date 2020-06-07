@@ -59,6 +59,7 @@ class HFVAE(PTVAE):
 
         return (log_qz - log_joint_avg_qz).mean()
 
+    # TODO : test this out
     def mutual_info_by_components(self, q, p, **kwargs):
         N = kwargs['N']
         batch_size = kwargs['batch_size']
