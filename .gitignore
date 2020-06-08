@@ -6,3 +6,4 @@ venv/
 results/
 resources/
 evaluation/NPEET
+.ipynb_checkpoints
