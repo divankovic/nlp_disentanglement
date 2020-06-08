@@ -29,7 +29,7 @@ class ConvDecoder(nn.Module):
 cnn_architectures = {
     'simpleconv': lambda nc, latent_dim:
     nn.Sequential(
-        # mnist example - modify for textual data
+        # mnist example - modify for textual raw
         nn.Linear(latent_dim, 256),  # B, 256
         Unsqueeze3D(),  # B, 256,  a_0,  a_0
         nn.ReLU(True),

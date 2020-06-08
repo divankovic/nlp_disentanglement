@@ -8,7 +8,7 @@ from optparse import OptionParser
 import pandas as pd
 from scipy.io import savemat
 
-os.chdir('..')
+os.chdir('../..')
 from utils.file_handling import *
 
 """
@@ -17,7 +17,7 @@ Input format is one line per item.
 Each line should be a json object.
 At a minimum, each json object should have a "text" field, with the document text.
 Any other field can be used as a label (specified with the --label option).
-If training and test data are to be processed separately, the same input directory should be used
+If training and test raw are to be processed separately, the same input directory should be used
 Run "python preprocess_data -h" for more options.
 If an 'id' field is provided, this will be used as an identifier in the dataframes, otherwise index will be used 
 """
@@ -38,11 +38,11 @@ def main(args):
     parser.add_option('--label', dest='label', default='label',
                       help='field(s) to use as label (comma-separated): default=%default')
     parser.add_option('--test', dest='test', default='resources/datasets/20_newsgroups_old/json/test.json',
-                      help='Test data (test.jsonlist): default=%default')
+                      help='Test raw (test.jsonlist): default=%default')
     parser.add_option('--train-prefix', dest='train_prefix', default='train',
-                      help='Output prefix for training data: default=%default')
+                      help='Output prefix for training raw: default=%default')
     parser.add_option('--test-prefix', dest='test_prefix', default='test',
-                      help='Output prefix for test data: default=%default')
+                      help='Output prefix for test raw: default=%default')
     parser.add_option('--stopwords', dest='stopwords', default='mallet',
                       help='List of stopwords to exclude [None|mallet|snowball]: default=%default')
     parser.add_option('--min-doc-count', dest='min_doc_count', default=0,
@@ -109,7 +109,7 @@ def preprocess_data(train_infile, test_infile, output_dir, train_prefix, test_pr
         stopword_list = []
     stopword_set = {s.strip() for s in stopword_list}
 
-    print("Reading data files")
+    print("Reading raw files")
     train_items = read_jsonlist(train_infile)[0]
     n_train = len(train_items)
     print("Found {:d} training documents".format(n_train))
@@ -203,11 +203,11 @@ def preprocess_data(train_infile, test_infile, output_dir, train_prefix, test_pr
         test_X_sage, te_aspect, te_no_aspect, _, _= process_subset(test_items, test_parsed, label_fields, label_lists, vocab, output_dir, test_prefix)
 
     train_sum = np.array(train_X_sage.sum(axis=0))
-    print("%d words missing from training data" % np.sum(train_sum == 0))
+    print("%d words missing from training raw" % np.sum(train_sum == 0))
 
     if n_test > 0:
         test_sum = np.array(test_X_sage.sum(axis=0))
-        print("%d words missing from test data" % np.sum(test_sum == 0))
+        print("%d words missing from test raw" % np.sum(test_sum == 0))
 
     sage_output = {'tr_data': train_X_sage, 'tr_aspect': tr_aspect, 'widx': tr_widx, 'vocab': vocab_for_sage}
     if n_test > 0:
@@ -241,7 +241,7 @@ def process_subset(items, parsed, label_fields, label_lists, vocab, output_dir, 
         label_list_strings = [str(label) for label in label_list]
         label_index = dict(zip(label_list_strings, range(n_labels)))
 
-        # convert labels to a data frame
+        # convert labels to a raw frame
         if n_labels > 0:
             label_matrix = np.zeros([n_items, n_labels], dtype=int)
             label_vector = np.zeros(n_items, dtype=int)
@@ -311,7 +311,7 @@ def process_subset(items, parsed, label_fields, label_lists, vocab, output_dir, 
     write_list_to_text(mallet_strings, os.path.join(output_dir, output_prefix + '.mallet.txt'))
 
     # save output for David Blei's LDA/SLDA code
-    write_list_to_text(dat_strings, os.path.join(output_dir, output_prefix + '.data.dat'))
+    write_list_to_text(dat_strings, os.path.join(output_dir, output_prefix + '.raw.dat'))
     if len(dat_labels) > 0:
         write_list_to_text(dat_labels, os.path.join(output_dir, output_prefix + '.' + label_field + '.dat'))
 

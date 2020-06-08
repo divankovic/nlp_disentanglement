@@ -46,7 +46,7 @@ def entropy(X, k=1):
     Parameters
     ===========
     X : array-like, shape (n_samples, n_features)
-        The data the entropy of which is computed
+        The raw the entropy of which is computed
     k : int, optional
         number of nearest neighbors for density estimation
     Notes

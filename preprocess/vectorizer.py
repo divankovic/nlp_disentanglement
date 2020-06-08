@@ -3,7 +3,7 @@ from math import ceil
 from collections import Counter
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
-
+from scipy import sparse
 from preprocess.text_preprocessing import clean_text
 
 
@@ -27,27 +27,35 @@ class Vectorizer:
         self.word2idx = {word: int(idx) for word, idx in vocab['word2idx'].items()}
         self.idx2word = {int(idx): word for idx, word in vocab['idx2word'].items()}
         self.vocab_size = len(self.word2idx)
+        self.count_vectorizer = CountVectorizer(tokenizer=clean_text, vocabulary=self.word2idx)
 
-    def build_vocab(self, data, vocab_path):
+    def build_vocab(self, data, save_path):
         count_vectorizer = CountVectorizer(tokenizer=clean_text, min_df=self.min_occ, token_pattern=None,
                                            max_features=self.vocab_size)
         count_vectorizer.fit(data)
+        self.count_vectorizer = count_vectorizer  # for extracting BoW features
         self.word2idx = count_vectorizer.vocabulary_
 
-        for word in self.word2idx:
-            self.word2idx[word] += 1
-        self.word2idx[self.unknown] = 0
+        # for word in self.word2idx:
+        #    self.word2idx[word] += 1
+        # self.word2idx[self.unknown] = 0
         self.idx2word = {idx: word for word, idx in self.word2idx.items()}
-        self.vocab_size = len(self.word2idx)
 
-        with open(vocab_path, 'w') as vocab_file:
-            vocab = {'word2idx': self.word2idx, 'idx2word': self.idx2word}
-            json.dump(vocab, vocab_file)
-            print('Saving vocabulary to %s' % vocab_path)
+        if save_path:
+            with open(save_path, 'w') as vocab_file:
+                vocab = {'word2idx': self.word2idx, 'idx2word': self.idx2word}
+                json.dump(vocab, vocab_file)
+                print('Saving vocabulary to %s' % save_path)
+
+    def text_to_bow(self, data, binary=False):
+        data = self.count_vectorizer.transform(data)
+        if binary:
+            data[np.where(data != 0)] = 1
+        return np.array(data)
 
     def extract_embeddings(self, model):
         """
-        Extracts word embeddings from the data using the model_0.
+        Extracts word embeddings from the raw using the model_0.
         Note : if the word is not in the model_0, then it is randomly initalized.
         Parameters
         ----------
@@ -87,17 +95,6 @@ class Vectorizer:
 
         return sequences
 
-    def text_to_BoW(self, data):
-        bow = np.zeros([len(data), self.vocab_size])
-        texts_tokenized = list(
-            map(lambda s: [self.unknown if word not in self.word2idx else word for word in clean_text(s)],
-                data))
-        sequences = list(map(lambda s: [self.word2idx[word] for word in s], texts_tokenized))
-        for (i, sequence) in enumerate(sequences):
-            bow[i][sequence] = 1
-
-        return bow
-
     def text_to_embeddings(self, data, pad=True, maxlen_ratio=None, aggregation='mean'):
         """
         Sequence features are obtained by aggregating the embeddings of the words.
@@ -105,7 +102,7 @@ class Vectorizer:
 
         Returns
         -------
-        embeddings for the data
+        embeddings for the raw
         """
         print('Converting texts to embeddings')
         sequences = self.text_to_sequences(data, pad=pad, maxlen_ratio=maxlen_ratio)
@@ -122,45 +119,46 @@ class Vectorizer:
 
         return vectors
 
-    class SimpleSequenceVocab:
-        """
-        Used for experiments with text-generation setup.
-        No text preprocessing
-        """
 
-        def __init__(self, path):
-            self.word2idx = {}
-            self.idx2word = []
+class SimpleSequenceVocab:
+    """
+    Used for experiments with text-generation setup.
+    No text preprocessing
+    """
 
-            with open(path) as f:
-                for line in f:
-                    w = line.split()[0]
-                    self.word2idx[w] = len(self.word2idx)
-                    self.idx2word.append(w)
-            self.size = len(self.word2idx)
+    def __init__(self, path):
+        self.word2idx = {}
+        self.idx2word = []
 
-            self.pad = self.word2idx['<pad>']
-            self.go = self.word2idx['<go>']
-            self.eos = self.word2idx['<eos>']
-            self.unk = self.word2idx['<unk>']
-            self.blank = self.word2idx['<blank>']
+        with open(path) as f:
+            for line in f:
+                w = line.split()[0]
+                self.word2idx[w] = len(self.word2idx)
+                self.idx2word.append(w)
+        self.size = len(self.word2idx)
 
-        @staticmethod
-        def build(sents, path, size):
-            v = ['<pad>', '<go>', '<eos>', '<unk>', '<blank>']
-            words = [w for s in sents for w in s]
-            cnt = Counter(words)
-            n_unk = len(words)
-            for w, c in cnt.most_common(size):
-                v.append(w)
-                n_unk -= c
-            cnt['<unk>'] = n_unk
+        self.pad = self.word2idx['<pad>']
+        self.go = self.word2idx['<go>']
+        self.eos = self.word2idx['<eos>']
+        self.unk = self.word2idx['<unk>']
+        self.blank = self.word2idx['<blank>']
 
-            with open(path, 'w') as f:
-                for w in v:
-                    f.write('{}\t{}\n'.format(w, cnt[w]))
+    @staticmethod
+    def build(sents, path, size):
+        v = ['<pad>', '<go>', '<eos>', '<unk>', '<blank>']
+        words = [w for s in sents for w in s]
+        cnt = Counter(words)
+        n_unk = len(words)
+        for w, c in cnt.most_common(size):
+            v.append(w)
+            n_unk -= c
+        cnt['<unk>'] = n_unk
 
-        @staticmethod
-        def strip_eos(sents):
-            return [sent[:sent.index('<eos>')] if '<eos>' in sent else sent
-                    for sent in sents]
+        with open(path, 'w') as f:
+            for w in v:
+                f.write('{}\t{}\n'.format(w, cnt[w]))
+
+    @staticmethod
+    def strip_eos(sents):
+        return [sent[:sent.index('<eos>')] if '<eos>' in sent else sent
+                for sent in sents]
