@@ -50,8 +50,8 @@ class Vectorizer:
     def text_to_bow(self, data, binary=False):
         data = self.count_vectorizer.transform(data)
         if binary:
-            data[np.where(data != 0)] = 1
-        return np.array(data)
+            data[data != 0] = 1
+        return data
 
     def extract_embeddings(self, model):
         """

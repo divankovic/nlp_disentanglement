@@ -47,8 +47,8 @@ if __name__ == '__main__':
     X_train = vectorizer.text_to_bow(X_train)
     X_test = vectorizer.text_to_bow(X_test)
 
-    sparse.save_npz(SAVE_PATH+'train.npz', sparse.csr_matrix(X_train))
-    sparse.save_npz(SAVE_PATH+'test.npz', sparse.csr_matrix(X_test))
+    sparse.save_npz(SAVE_PATH+'train.npz', X_train)
+    sparse.save_npz(SAVE_PATH+'test.npz', X_test)
     # np.save(save_path, X_train)
     # np.save(save_path, X_test)
 
