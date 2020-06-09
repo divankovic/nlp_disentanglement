@@ -7,3 +7,4 @@ sklearn
 tensorboardX
 torch
 torchvision
+git+git://github.com/probtorch/probtorch
