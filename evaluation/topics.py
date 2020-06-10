@@ -6,6 +6,7 @@ import itertools
 from collections import defaultdict
 from math import log
 import pickle
+import torch
 
 
 def print_top_words(beta, idx2word, n_top_words=10):

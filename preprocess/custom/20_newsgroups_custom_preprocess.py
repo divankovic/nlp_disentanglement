@@ -196,7 +196,7 @@ def preprocess_data(train_infile, test_infile, output_dir, train_prefix, test_pr
     print("Most common words remaining:", ' '.join(vocab[:10]))
     vocab.sort()
 
-    write_to_json(vocab, os.path.join(output_dir, train_prefix + '.vocab.json'))
+    write_to_json(vocab, os.path.join(output_dir, train_prefix + '.vocab_full.json'))
 
     train_X_sage, tr_aspect, tr_no_aspect, tr_widx, vocab_for_sage = process_subset(train_items, train_parsed, label_fields, label_lists, vocab, output_dir, train_prefix)
     if n_test > 0:

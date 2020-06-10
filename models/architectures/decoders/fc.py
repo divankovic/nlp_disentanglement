@@ -28,7 +28,7 @@ class PTFCDecoder(nn.Module):
         p = probtorch.Trace()
         z = p.multivariate_normal(self.prior_mean, self.prior_cov, value=q['z'], name='z')
         x_recon = self.main(z)
-        p.loss(lambda x_recon, x: -(torch.log(x_recon + 1e-8) * x).sum(-1),
+        p.loss(lambda x_recon, x: -(torch.log(x_recon) * x).sum(-1),
                x_recon, x, name='x_recon')
         return p
 
@@ -54,7 +54,7 @@ class HFCDecoder(PTFCDecoder):
 
         latents = torch.cat(zs, -1)
         x_recon = self.main(latents)
-        p.loss(lambda x_recon, x: -(torch.log(x_recon+1e-8)*x).sum(-1), x_recon, x, name='x_recon')
+        p.loss(lambda x_recon, x: -(torch.log(x_recon)*x).sum(-1), x_recon, x, name='x_recon')
         return p
 
 

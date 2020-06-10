@@ -30,8 +30,8 @@ class Vectorizer:
         self.count_vectorizer = CountVectorizer(tokenizer=clean_text, vocabulary=self.word2idx)
 
     def build_vocab(self, data, save_path):
-        count_vectorizer = CountVectorizer(tokenizer=clean_text, min_df=self.min_occ, token_pattern=None,
-                                           max_features=self.vocab_size)
+        count_vectorizer = CountVectorizer(tokenizer=clean_text, min_df=self.min_occ, token_pattern=None
+                                           , max_features=self.vocab_size)
         count_vectorizer.fit(data)
         self.count_vectorizer = count_vectorizer  # for extracting BoW features
         self.word2idx = count_vectorizer.vocabulary_

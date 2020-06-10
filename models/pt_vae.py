@@ -19,8 +19,8 @@ class PTVAE(nn.Module):
         p = self.decoder(x, q)
         return q, p
 
-    def loss_function(self, q, p, **kwargs):
-        return - probtorch.objectives.montecarlo.elbo(q, p, sample_dim=0, batch_dim=1, beta=1.0)
+    def loss_function(self, q, p, reduce=True, **kwargs):
+        return - probtorch.objectives.montecarlo.elbo(q, p, sample_dim=0, batch_dim=1, beta=1.0, reduce=reduce)
 
 
 class HFVAE(PTVAE):
@@ -31,7 +31,7 @@ class HFVAE(PTVAE):
             beta = (1.0, 1.0, 1.0, 1.0, 1.0)
         self.beta = beta
 
-    def loss_function(self, q, p, **kwargs):
+    def loss_function(self, q, p, reduce=True, **kwargs):
         N = kwargs['N']
         batch_size = kwargs['batch_size']
         alpha = kwargs['alpha'] if 'alpha' in kwargs else 0.0
@@ -40,13 +40,11 @@ class HFVAE(PTVAE):
         if NUM_SAMPLES is None:
             # wont work is NUM_SAMPLES is None
             return -probtorch.objectives.marginal.elbo(q, p, sample_dim=None, batch_dim=0, alpha=alpha, beta=self.beta,
-                                                       bias=bias)
+                                                       bias=bias, reduce=reduce)
         else:
             return -probtorch.objectives.marginal.elbo(q, p, sample_dim=0, batch_dim=1, alpha=alpha, beta=self.beta,
-                                                       bias=bias)
+                                                       bias=bias, reduce=reduce)
 
-    # TODO - extend this to dimension-wise mutual information (I(x, zd))
-    # TODO - try computing the same thing using some library and compare the results
     def mutual_info(self, q, p, **kwargs):
         N = kwargs['N']
         batch_size = kwargs['batch_size']
@@ -59,7 +57,6 @@ class HFVAE(PTVAE):
 
         return (log_qz - log_joint_avg_qz).mean()
 
-    # TODO : try this out
     def mutual_info_by_components(self, q, p, **kwargs):
         N = kwargs['N']
         batch_size = kwargs['batch_size']
