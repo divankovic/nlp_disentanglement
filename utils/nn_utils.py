@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch.backends.cudnn as cudnn
 import gensim
 
 import random
@@ -10,6 +11,8 @@ def set_seed(seed):  # set the random seed for reproducibility
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+    cudnn.deterministic = True
+    cudnn.benchmark = False
 
 
 class Flatten3D(nn.Module):

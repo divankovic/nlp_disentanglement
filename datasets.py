@@ -1,21 +1,9 @@
 from sklearn.datasets import fetch_20newsgroups
 from torch.utils.data import Dataset
-from preprocess.text_preprocessing import clean_text, tokenize
 
 
-# contains loader for different datasets used in experiments
-# setup 20NewsGroups, IMDB first
+
 # TODO - update this to load BeerReviews and 20newsgroups, already preprocessed
-class SimpleTextDataset(Dataset):
-    def __init__(self, data):
-        self.data = data
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        return self.data[idx]
-
 
 class DatasetLoader:
 

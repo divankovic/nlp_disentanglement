@@ -19,7 +19,6 @@ class VAETrainer:
         if self.save_model_path:
             if not os.path.exists(self.save_model_path):
                 os.makedirs(self.save_model_path)
-        self.writer = writer
         self.probtorch = probtorch
 
     def run(self, optimizer, epochs, track_perplexity=False, track_mutual_info=True):
