@@ -5,7 +5,7 @@ from preprocess.text_preprocessing import clean_text, tokenize
 
 # contains loader for different datasets used in experiments
 # setup 20NewsGroups, IMDB first
-
+# TODO - update this to load BeerReviews and 20newsgroups, already preprocessed
 class SimpleTextDataset(Dataset):
     def __init__(self, data):
         self.data = data

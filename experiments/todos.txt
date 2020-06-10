@@ -1,0 +1,20 @@
+20 news
+    - run with dataset from Srivastava (prodLDA), as everyone uses that dataset, good for comparison
+    - classic NVDM
+    - Beta VAE NVDM - change Beta
+    - Factor VAE NVDM - change gamma
+    - HFVAE NVDM - change beta, gamma
+
+BeerReviews
+    - classic NVDM
+    - HFVAE NVDM single setup (independent groups, correletions inside the group)
+    - HFVAE cocrete prior
+
+EVALUATION
+umap
+word distributions
+...
+
+other - GSM/GSB/RSB (from Discovering discrete latent topics with neural variational inference)
+      - multilayer encoder and decoder (from Neural Relational Topic Models for Scientific Article Analysis)
+      - model from Coherence aware neural topic modeling ()

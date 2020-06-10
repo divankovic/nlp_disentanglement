@@ -6,15 +6,19 @@ class VAETrainer:
 
     def __init__(self, model, device, train_loader, test_loader, included_labels=False, save_model_path=None,
                  writer=None, log_interval=10,
-                 test_epoch=1, probtorch=False):
+                 test_epoch=1, save_interval=10, probtorch=False):
         self.model = model
         self.device = device
         self.train_loader = train_loader
         self.test_loader = test_loader
         self.included_labels = included_labels
         self.log_interval = log_interval
+        self.save_interval = save_interval
         self.test_epoch = test_epoch
         self.save_model_path = save_model_path
+        if self.save_model_path:
+            if not os.path.exists(self.save_model_path):
+                os.makedirs(self.save_model_path)
         self.writer = writer
         self.probtorch = probtorch
 
@@ -37,14 +41,17 @@ class VAETrainer:
                 if track_perplexity:
                     test_perplexities.append(losses['perplexity'])
 
+            if epoch % self.save_interval == 0 and self.save_model_path:
+                torch.save(self.model.state_dict(), os.path.join(self.save_model_path, 'model.pt'))
+                print("Model saved at %s" % self.save_model_path)
+
+
         ret = {'train_losses': train_losses, 'test_losses': test_losses}
         if track_perplexity:
             ret['train_perplexities'] = train_perplexities
             ret['test_perplexities'] = test_perplexities
 
         if self.save_model_path:
-            if not os.path.exists(self.save_model_path):
-                os.makedirs(self.save_model_path)
             # save checkpoint
             torch.save(self.model.state_dict(), os.path.join(self.save_model_path, 'model.pt'))
             print("Model saved at %s" % self.save_model_path)

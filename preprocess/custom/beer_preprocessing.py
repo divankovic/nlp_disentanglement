@@ -48,9 +48,9 @@ if __name__ == '__main__':
     X_test = vectorizer.text_to_bow(X_test)
 
     train_inds = np.where(X_train.sum(-1) >= CUTOFF)[0]
-    X_train, Y_train = X_train[train_inds], Y_train[train_inds]
+    X_train, Y_train = X_train[train_inds], np.array(Y_train)[train_inds]
     test_inds = np.where(X_test.sum(-1) >= CUTOFF)[0]
-    X_test, Y_test = X_test[test_inds], Y_test[test_inds]
+    X_test, Y_test = X_test[test_inds], np.array(Y_test)[test_inds]
 
     sparse.save_npz(SAVE_PATH+'train.npz', X_train)
     sparse.save_npz(SAVE_PATH+'test.npz', X_test)
