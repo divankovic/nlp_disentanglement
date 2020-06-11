@@ -1,18 +1,20 @@
 - update repository README
-    - add installation instructions
-- dataset download + preprocessing script to get everything ready
+    - add installation instructions - last
+- document everything - last
+- dataset download + preprocessing script to get everything ready - also later, ok for now
+- add parameter grid search - not neccessary for now
+
 - Code organization
-    - document everything
     - organize runner
-        - load from config, train multiple models
-        - save model, parameters, losses
-        - use PyVAE, antonio, topic modeling repo as references
-        - use pytorchlighting or ignite (possibly)
+        - load from config : DONE
+        - train multiple models
+        - save model, parameters, losses : DONE
+
+    - early stopping  - DONE
+    - periodic model checkpoints to training - DONE
+    - return all components of the loss (hfvae) - DONE
+    - print topics (top words) and coherence during training - little harder for coherence : CONSIDER LATER
 
     - organize evaluation
         - tsne plot, npmi, ... - evaluate and save all results automatically
-
-    - add parameter grid search, early stopping and periodic model checkpoints to training
-    - return all components of the loss (hfvae)
-    - print topics (top words) and coherence during training
-    - fix perplexity calculation - prodlda_simple
+        - extract all methods to functions first (some evaluation methods need some fine-tuning)

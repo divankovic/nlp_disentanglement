@@ -12,9 +12,9 @@ from torch import optim
 from datasets import DatasetLoader
 from models.architectures.decoders.fc import FCDecoder
 from models.architectures.encoders.fc import FCEncoder
-from models.vae import VAE
+from models.vae import BaseVAE
 from preprocess.vectorizer import Vectorizer
-from trainer import VAETrainer
+from trainer_old import VAETrainer
 from utils.nn_utils import load_embeddings
 
 
@@ -38,9 +38,9 @@ def main(args):
     train_loader = torch.utils.data.DataLoader(dataset=X_train_vec, batch_size=args.batch_size, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(dataset=X_test_vec, batch_size=args.batch_size, shuffle=True, **kwargs)
 
-    model = VAE(encoder=FCEncoder(input_dim=300, latent_dim=20),
-                decoder=FCDecoder(latent_dim=20, output_dim=300),
-                recon_distribution='gauss').to(device)
+    model = BaseVAE(encoder=FCEncoder(input_dim=300, latent_dim=20),
+                    decoder=FCDecoder(latent_dim=20, output_dim=300),
+                    recon_distribution='gauss').to(device)
     model.double()
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 

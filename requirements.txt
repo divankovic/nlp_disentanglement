@@ -2,6 +2,7 @@ matplotlib
 numpy
 gensim
 pandas
+ruamel.yaml
 spacy
 sklearn
 tensorboardX

@@ -5,7 +5,7 @@ from probtorch.util import expand_inputs
 
 
 class FCEncoder(nn.Module):
-    def __init__(self, input_dim, hidden_dim, latent_dim, architecture='basic'):
+    def __init__(self, input_dim, hidden_dim, latent_dim, architecture='basic', **kwargs):
         super().__init__()
         self.latent_dim = latent_dim
         self.hidden_dim = hidden_dim
@@ -23,7 +23,7 @@ class FCEncoder(nn.Module):
 
 class PTFCEncoder(FCEncoder):
     # tuned to work with probtorch
-    def __init__(self, input_dim, hidden_dim, latent_dim, architecture='NVDM'):
+    def __init__(self, input_dim, hidden_dim, latent_dim, architecture='NVDM', **kwargs):
         super().__init__(input_dim, hidden_dim, latent_dim)
         self.main = ARCHITECTURES[architecture](input_dim, hidden_dim)
 
@@ -40,8 +40,8 @@ class PTFCEncoder(FCEncoder):
 
 class HFCEncoder(PTFCEncoder):
     # for structured (hierarchical) 2d latent representations
-    def __init__(self, input_dim, hidden_dim, latent_dim, num_groups, architecture='NVDM'):
-        super().__init__(input_dim, hidden_dim, latent_dim, architecture)
+    def __init__(self, input_dim, hidden_dim, latent_dim, num_groups, architecture='NVDM', **kwargs):
+        super().__init__(input_dim, hidden_dim, latent_dim, architecture, **kwargs)
         if latent_dim % num_groups != 0:
             raise ValueError('Latent_dim must be disible by num_groups!')
         self.num_groups = num_groups

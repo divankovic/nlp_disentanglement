@@ -5,7 +5,7 @@ import torch
 
 
 class FCDecoder(nn.Module):
-    def __init__(self, latent_dim, output_dim, architecture='basic'):
+    def __init__(self, latent_dim, output_dim, architecture='basic', **kwargs):
         super().__init__()
         self.latent_dim = latent_dim
         self.architecture = architecture
@@ -18,7 +18,7 @@ class FCDecoder(nn.Module):
 
 class PTFCDecoder(nn.Module):
 
-    def __init__(self, latent_dim, output_dim, batch_size, architecture='NVDM'):
+    def __init__(self, latent_dim, output_dim, batch_size, architecture='NVDM', **kwargs):
         super().__init__()
         self.main = ARCHITECTURES[architecture](latent_dim, output_dim)
         self.prior_mean = torch.zeros((batch_size, latent_dim)).cuda().double()
@@ -35,8 +35,8 @@ class PTFCDecoder(nn.Module):
 
 class HFCDecoder(PTFCDecoder):
     # for structured (hierarchical) 2d latent representations
-    def __init__(self, latent_dim, output_dim, batch_size, num_groups, architecture='NVDM'):
-        super().__init__(latent_dim, output_dim, batch_size, architecture)
+    def __init__(self, latent_dim, output_dim, batch_size, num_groups, architecture='NVDM', **kwargs):
+        super().__init__(latent_dim, output_dim, batch_size, architecture, **kwargs)
         if latent_dim % num_groups != 0:
             raise ValueError('Latent_dim must be disible by num_groups!')
         self.num_groups = num_groups

@@ -107,3 +107,6 @@ class MultiOutput(object):
     def flush(self):
         for f in self.files:
             f.flush()
+
+    def print(self, obj):
+        self.write(obj+'\n')

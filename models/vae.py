@@ -8,7 +8,7 @@ import gensim
 from utils.vae_utils import reparametrize, reconstruction_loss, kl_divergence
 
 
-class VAE(nn.Module):
+class BaseVAE(nn.Module):
     def __init__(self, encoder, decoder, recon_distribution=None):
         super().__init__()
 
@@ -22,31 +22,21 @@ class VAE(nn.Module):
     def decode(self, z, **kwargs):
         return self.decoder(z)
 
-    def init_layers(self):
-        # not neccessary, done automatically in pytorch
-        for block in self._modules:
-            for m in self._modules[block]:
-                if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
-                    init.xavier_normal_(m.weight.data)
-                elif isinstance(m, nn.Linear):
-                    init.kaiming_normal_(m.weight.data)
-                elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d)):
-                    m.weight.data.fill_(1)
-                    if m.bias is not None:
-                        m.bias.data.fill_(0)
-                else:
-                    init.xavier_normal_(m.weight.data)
-
     def forward(self, x, **kwargs):
         mu, logvar = self.encode(x)
         z = reparametrize(mu, logvar)
         return self.decode(z).view(x.size()), mu, logvar
 
     def loss_function(self, x_recon, x, mu, logvar):
-        return reconstruction_loss(x_recon, x, self.recon_distribution) + kl_divergence(mu, logvar)
+        components = self.loss_components(x_recon, x, mu, logvar)
+        return components['reconstruction_loss'] + components['kl_divergence']
+
+    def loss_components(self, x_recon, x, mu, logvar):
+        return {'reconstruction_loss': reconstruction_loss(x_recon, x, self.recon_distribution),
+                'kl_divergence': kl_divergence(mu, logvar)}
 
 
-class SequenceVAE(VAE):
+class SequenceVAE(BaseVAE):
     # Text generation VAE
     def __init__(self, encoder, decoder, vocab_size, dropout, recon_distribution='categorical', embeddings=None):
         # embeddings - path to pretrained embeddings
@@ -79,4 +69,3 @@ class SequenceVAE(VAE):
         z = reparametrize(mu, logvar)
         logits, _ = self.decoder(x, z, self.drop)
         return logits, mu, logvar
-
