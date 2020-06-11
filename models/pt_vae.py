@@ -1,5 +1,6 @@
 import probtorch
 from torch import nn
+import numpy as np
 
 
 # ProbTorch VAE implementations
@@ -14,6 +15,12 @@ class PTVAE(nn.Module):
         q = self.encoder(x)
         p = self.decoder(x, q)
         return q, p
+
+    def sample_latent(self, x):
+        q = self.encoder(x)
+        z = q['z'].value.cpu().detach().numpy()
+        z_mu = q['z'].dist.mean.cpu().detach().numpy()
+        return z, z_mu
 
     def loss_function(self, q, p, reduce=True, **kwargs):
         return - probtorch.objectives.montecarlo.elbo(q, p, sample_dim=0, batch_dim=1, beta=1.0, reduce=reduce)
@@ -37,6 +44,17 @@ class HFVAE(PTVAE):
             # beta template for hfvae (gammma, 1, alpha, beta, 0)
             beta = (1.0, 1.0, 1.0, 1.0, 0)
         self.beta = beta
+
+    def sample_latent(self, x):
+        q = self.encoder(x)
+        z_groups = []
+        z_mu_groups = []
+        for i in range(self.encoder.num_groups):
+            z = q['z_' + str(i)].value.cpu().detach().numpy()
+            mu = q['z_' + str(i)].dist.mean.cpu().detach().numpy()
+            z_groups.append(z)
+            z_mu_groups.append(mu)
+        return np.concatenate(z_groups, axis=-1), np.concatenate(z_mu_groups, axis=-1)
 
     def loss_function(self, q, p, reduce=True, **kwargs):
         N = kwargs['N']
@@ -69,15 +87,3 @@ class HFVAE(PTVAE):
         losses['kl_to_prior(ii)'] = self.beta[1] * (log_avg_qzd_prod - log_avg_pzd_prod).mean()
 
         return losses
-
-    def mutual_info(self, q, p, **kwargs):
-        N = kwargs['N']
-        batch_size = kwargs['batch_size']
-        bias = (N - 1) / (batch_size - 1)
-        sample_dim = 0
-        batch_dim = 1
-        z = [n for n in q.sampled() if n in p]
-        log_qz = q.log_joint(sample_dim, batch_dim, z)
-        log_joint_avg_qz, _, _ = q.log_batch_marginal(sample_dim, batch_dim, z, bias=bias)
-
-        return (log_qz - log_joint_avg_qz).mean()

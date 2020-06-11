@@ -66,6 +66,21 @@ class VAEXperiment:
         return torch.utils.data.DataLoader(data, batch_size=self.params['batch_size'], shuffle=True,
                                            **self.loader_kwargs)
 
+    def sample_latent(self, data_loader):
+        self.model.eval()
+        zs = []
+        z_mus = []
+        for data in data_loader:
+            if self.params['labels']: (data, _) = data
+            if self.cuda: data = data.cuda().double()
+            z, z_mu = self.model.sample_latent(data)
+            zs.append(z)
+            z_mus.append(z_mu)
+        zs = np.concatenate(zs, 0)
+        z_mus = np.concatenate(zs, 0)
+
+        return zs, z_mus
+
 
 class PTVAEXperiment(VAEXperiment):
     def __init__(self, model, params):

@@ -1,31 +1,42 @@
-from gensim.corpora.dictionary import Dictionary
-from gensim.models.coherencemodel import CoherenceModel
-from gensim.matutils import Dense2Corpus
-import numpy as np
 import itertools
+import pickle
 from collections import defaultdict
 from math import log
-import pickle
-import torch
+
+import numpy as np
+from gensim.corpora.dictionary import Dictionary
+from gensim.matutils import Dense2Corpus
+from gensim.models.coherencemodel import CoherenceModel
+from utils.file_handling import MultiOutput
 
 
-def print_top_words(beta, idx2word, n_top_words=10):
+def get_topics(beta, idx2word, n_top=10):
+    return [[idx2word[j] for j in beta[i].argsort()[:-n_top - 1:-1]] for i in range(len(beta))]
+
+
+def print_top_words(beta, idx2word, n_top_words=10, save_path=None):
     """
     Print top n_top_words for each topic.
 
     Parameters
     ----------
-    beta - weights of the decoder in the form of (latent_dim, vocab_dim)
+    beta - weights of the decoder (word distribution over topics) in the form of (latent_dim, vocab_dim)
     idx2word - index to word mapping from the vocabulary
     n_top_words - top words to print for each latent variable (topic)
 
     Returns
     -------
     """
-    print('--------------- Topics ------------------')
-    for i in range(len(beta)):
-        print(' '.join([idx2word[j] for j in beta[i].argsort()[:-n_top_words - 1:-1]]))
-    print('-----------------------------------------')
+    if save_path:
+        log = MultiOutput(sys.stdout, open(save_path, 'w'))
+    else:
+        log = MultiOutput(sys.stdout)
+
+    log.print('--------------- Topics ------------------')
+    topics = get_topics(beta, idx2word, n_top=n_top_words)
+    for topic in topics:
+        log.print(' '.join(topic))
+    log.print('-----------------------------------------')
 
 
 def umass_coherence_score(model, X, score_num=20):
@@ -151,3 +162,12 @@ def npmi_coherence_score(topics, word_frequencies, joint_word_frequencies):
         topic_coherences.append(topic_coherence)
 
     return topic_coherences
+
+
+def get_most_correlated_topics(cov_matrix, top_correlations=4):
+    inds = np.dstack(np.unravel_index(np.argsort(cov_matrix.ravel()), (LATENT_DIM, LATENT_DIM)))[0]
+    inds = inds[-LATENT_DIM - top_correlations:-LATENT_DIM, :]
+    covs = [cov_matrix[tuple(ind)] for ind in inds]
+    cor_topics = sorted(set(inds.flatten()))
+
+    return inds, covs, cor_topics

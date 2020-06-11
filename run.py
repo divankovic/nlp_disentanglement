@@ -16,7 +16,7 @@ def main(args):
                         dest="config",
                         metavar='FILE',
                         help='path to the config file',
-                        default='configs/hfvae.yaml')
+                        default='configs/basic/hfvae.yaml')
     args = parser.parse_args(args)
     with open(args.config, 'r') as file:
         config = yaml.safe_load(file)

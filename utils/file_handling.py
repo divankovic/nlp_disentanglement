@@ -5,6 +5,9 @@ import codecs
 import pickle
 import numpy as np
 from scipy import sparse
+import ruamel.yaml as yaml
+import torch
+import models
 
 
 def makedirs(directory):
@@ -95,6 +98,23 @@ def load_nparray(path):
     return np.loadtxt(path, dtype=float)
 
 
+def load_model_from_config(config_path, weights_path):
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+    model_params = {
+        'encoder': models.encoders[config['model_parameters']['encoder']['name']](
+            **config['model_parameters']['encoder']),
+        'decoder': models.decoders[config['model_parameters']['decoder']['name']](
+            **config['model_parameters']['decoder']),
+    }
+    if 'spec' in config['model_parameters']:
+        model_params.update(config['model_parameters']['spec'])
+    model = models.vae_models[config['model_parameters']['name']](**model_params)
+    model.load_state_dict(torch.load(weights_path))
+    model.cuda().double()
+    return model
+
+
 class MultiOutput(object):
     def __init__(self, *files):
         self.files = files
@@ -109,4 +129,4 @@ class MultiOutput(object):
             f.flush()
 
     def print(self, obj):
-        self.write(obj+'\n')
+        self.write(obj + '\n')
