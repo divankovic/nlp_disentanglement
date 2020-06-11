@@ -43,7 +43,9 @@ class VAETrainer:
         if early_stopping is None:
             torch.save(self.experiment.model.state_dict(), model_save_path)
             self.logger.print('Model saved at %s' % model_save_path)
-        json.dump(metrics, open(os.path.join(self.save_path, 'metrics.json'),'w'), indent=4)
+        json.dump(metrics, open(os.path.join(self.save_path, 'metrics.json'), 'w'), indent=4)
+        self.logger.print('Metrics saved at %s'%os.path.join(self.save_path, 'metrics.json'))
+        self.logger.print('\n')
         return metrics
 
     def train(self, epoch, optimizer):

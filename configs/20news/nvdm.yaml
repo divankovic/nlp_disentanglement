@@ -1,0 +1,39 @@
+model_parameters:
+    name : 'NVDM'
+    encoder :
+        name : 'PTFCEncoder'
+        input_dim : 2000
+        hidden_dim : 500
+        latent_dim : 50
+        architecture : 'NVDM'
+    decoder :
+        name : 'PTFCDecoder'
+        latent_dim : 50
+        output_dim : 2000
+        batch_size : 100
+        architecture : 'NVDM'
+
+
+experiment_parameters:
+  name : 'PTVAEXperiment'
+  seed : 50
+  dataset : 20news
+  data_path : 'resources/datasets/20news/new'
+  sparse: True
+  labels: True
+  save_path : 'results/grid'
+  batch_size : 100
+  learning_rate : 5e-5
+  use_cuda : True
+
+
+trainer_parameters:
+  max_epochs : 5
+  patience : 0 # used for early stopping , ignored if set to 0 - also depends on test_interval
+  log_interval : 10 # log every 10th batch
+  test_interval : 1  # evaluate on test(valid) every epoch
+  track:
+    loss_components: True # track and log all components of the loss
+    perplexity: False
+
+
