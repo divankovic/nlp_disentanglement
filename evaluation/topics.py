@@ -2,6 +2,7 @@ import itertools
 import pickle
 from collections import defaultdict
 from math import log
+import sys
 
 import numpy as np
 from gensim.corpora.dictionary import Dictionary
@@ -14,7 +15,7 @@ def get_topics(beta, idx2word, n_top=10):
     return [[idx2word[j] for j in beta[i].argsort()[:-n_top - 1:-1]] for i in range(len(beta))]
 
 
-def print_top_words(beta, idx2word, n_top_words=10, save_path=None):
+def print_top_words(beta, idx2word, n_top=10, save_path=None):
     """
     Print top n_top_words for each topic.
 
@@ -33,7 +34,7 @@ def print_top_words(beta, idx2word, n_top_words=10, save_path=None):
         log = MultiOutput(sys.stdout)
 
     log.print('--------------- Topics ------------------')
-    topics = get_topics(beta, idx2word, n_top=n_top_words)
+    topics = get_topics(beta, idx2word, n_top=n_top)
     for topic in topics:
         log.print(' '.join(topic))
     log.print('-----------------------------------------')
@@ -164,9 +165,10 @@ def npmi_coherence_score(topics, word_frequencies, joint_word_frequencies):
     return topic_coherences
 
 
-def get_most_correlated_topics(cov_matrix, top_correlations=4):
-    inds = np.dstack(np.unravel_index(np.argsort(cov_matrix.ravel()), (LATENT_DIM, LATENT_DIM)))[0]
-    inds = inds[-LATENT_DIM - top_correlations:-LATENT_DIM, :]
+def get_most_correlated_topics(cov_matrix,top_correlations=4):
+    latent_dim = cov_matrix.shape[0]
+    inds = np.dstack(np.unravel_index(np.argsort(cov_matrix.ravel()), (latent_dim, latent_dim)))[0]
+    inds = inds[-latent_dim- top_correlations:-latent_dim, :]
     covs = [cov_matrix[tuple(ind)] for ind in inds]
     cor_topics = sorted(set(inds.flatten()))
 

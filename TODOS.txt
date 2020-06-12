@@ -7,6 +7,6 @@
 
 - Code organization
     - organize evaluation
-        - tsne plot, npmi, ... - evaluate and save all results automatically
-        - extract all methods to functions first (some evaluation methods need some fine-tuning)
-        - automatic evaluation script for trained models
+        - tsne plot, npmi, ... - evaluate and save all results automatically - DONE
+        - extract all methods to functions first (some evaluation methods need some fine-tuning) - DONe
+        - automatic evaluation script for trained models - DONE

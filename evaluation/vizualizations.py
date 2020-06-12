@@ -6,6 +6,8 @@ from sklearn.manifold import TSNE
 
 
 def tsne_plot(zs, ys, labels, show=False, save_path=None, plot_by_class=True, **tsne_params):
+    import warnings
+    warnings.filterwarnings("ignore")
     # TODO : MAKE PLOT PRETTIER : CUSTOMIZE COLORS,  ADD DIFFERENT SHAPES, ...
     # reducing zs to 2 dimensions using tsne. tsne parameters might need to be fine tuned
     # to achieve better results
@@ -18,7 +20,6 @@ def tsne_plot(zs, ys, labels, show=False, save_path=None, plot_by_class=True, **
     fig = plt.figure(figsize=(10, 10))
     ax = plt.gca()
     cmap = plt.get_cmap('gist_rainbow', len(labels))
-    colors = [cmap(i) for i in range(len(labels))]
     for k in range(len(labels)):
         m = ys == k
         ax.scatter(zs2[m, 0], zs2[m, 1], label='y=%s' % labels[k], s=6, c=cmap(k), alpha=0.5)

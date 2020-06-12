@@ -5,6 +5,7 @@ import sys
 import time
 from utils.file_handling import MultiOutput, load_model_from_config
 from evaluation.vizualizations import tsne_plot, correlation_plot
+from evaluation.topics import get_topics, npmi_coherence_score, print_top_words, get_most_correlated_topics
 
 
 def main(args):
@@ -19,6 +20,10 @@ def main(args):
                         metavar='FILE',
                         help='path to which the save the results to',
                         default='results/20news/HFVAE/2020-06-11-17:02')
+    parser.add_argument('--most_cor', '-c',
+                        dest="most_correlated",
+                        action='store_false')
+
     args = parser.parse_args(args)
     config_path = os.path.join(args.model_path, 'config.yaml')
     config = yaml.safe_load(open(config_path, 'r'))
@@ -29,16 +34,46 @@ def main(args):
 
     # start evaluation methods
     zs, z_mus = experiment.sample_latent(experiment.test_dataloader())
-    ys = np.load(os.path.join(data_path, 'test.labels.npy'))
+    ys = np.load(os.path.join(data_path, 'test.labels.npy'))[:zs.shape[0]]
     labels = json.load(open(os.path.join(data_path, 'labels.json'), 'r'))
     tsne_plot(zs, ys, labels, show=False, save_path=args.save_path, plot_by_class=True,
               perplexity=10, learning_rate=200, n_iter=2000, n_jobs=-1)
     # consider early_exaggeration and init (pca)
 
-    #correlation plot
-    #topics
-    #npmi
-    #...
+    # correlation plot
+    correlation_plot(zs, show=False, save_path=args.save_path)
+
+    # topics
+    n_top = 10
+    vocab = json.load(open(os.path.join(data_path, 'vocab.json'), 'r'))
+    idx2word = {i: vocab[i] for i in range(len(vocab))}
+    beta = model.decoder.main[0].weight.cpu().detach().numpy().T
+    topics = get_topics(beta, idx2word, n_top=n_top)
+    print_top_words(beta, idx2word, n_top=n_top, save_path=os.path.join(args.save_path, 'topics.txt'))
+
+    # npmi
+    if not os.path.exists(os.path.join(data_path, 'word_frequencies.pkl')) or not os.path.exists(
+            os.path.join(data_path, 'jointword_frequencies.pkl')):
+        raise ValueError(
+            'word_frequencies.pkl or jointword_frequencies.pkl not found in data path! Run '
+            'calculate_word_frequencies() from topics.py on the desired dataset (X_raw.json) to obtain it.')
+    word_frequencies = pickle.load(open(os.path.join(data_path, 'word_frequencies.pkl'), 'rb'))
+    joint_word_frequencies = pickle.load(open(os.path.join(data_path, 'jointword_frequencies.pkl'), 'rb'))
+    npmi_per_topic = npmi_coherence_score(topics, word_frequencies, joint_word_frequencies)
+    print(npmi_per_topic)
+    print(sum(npmi_per_topic) / len(npmi_per_topic))
+    print('Max: %f' % max(npmi_per_topic))
+    print('Topic : %s' % (' '.join(topics[np.argmax(npmi_per_topic)])))
+    # save results
+    json.dump({'npmi_per_topic': npmi_per_topic, 'avg_npmi': sum(npmi_per_topic) / len(npmi_per_topic),
+               'topics': topics},
+              open(os.path.join(args.save_path, 'npmi.json'), 'w'), indent=4)
+
+    # npmi for most correlated topics
+    if args.most_cor:
+        inds, covs, cor_topics = get_most_correlated_topics(corrcoef(zs.T), top_correlations=4)
+        for topic in cor_topics:
+            print('%d %f %s' % (topic, npmi_per_topic[topic], topics[topic]))
 
 
 if __name__ == '__main__':

@@ -74,10 +74,10 @@ class VAEXperiment:
             if self.params['labels']: (data, _) = data
             if self.cuda: data = data.cuda().double()
             z, z_mu = self.model.sample_latent(data)
-            zs.append(z)
-            z_mus.append(z_mu)
+            zs.append(z.reshape(-1, z.shape[-1]))
+            z_mus.append(z_mu.reshape(-1, z_mu.shape[-1]))
         zs = np.concatenate(zs, 0)
-        z_mus = np.concatenate(zs, 0)
+        z_mus = np.concatenate(z_mus, 0)
 
         return zs, z_mus
 

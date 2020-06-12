@@ -32,7 +32,7 @@ experiment_parameters:
 
 
 trainer_parameters:
-  max_epochs : 5
+  max_epochs : 10
   patience : 0 # used for early stopping , ignored if set to 0 - also depends on test_interval
   log_interval : 10 # log every 10th batch
   test_interval : 1  # evaluate on test(valid) every epoch
