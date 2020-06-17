@@ -1,14 +1,14 @@
 20 news
     - run with dataset from Srivastava (prodLDA), as everyone uses that dataset, good for comparison
     - classic NVDM
-    - Beta VAE NVDM - change Beta
-    - Factor VAE NVDM - change gamma
-    - HFVAE NVDM - change beta, gamma
+    - Beta VAE NVDM - change Beta - inspect if metrics are any better
+    - Beta TCVAE - change gamma
+    - HFVAE NVDM - change beta, gamma - inspect if metrics are any better
 
 BeerReviews
     - classic NVDM
     - HFVAE NVDM single setup (independent groups, correletions inside the group)
-    - HFVAE cocrete prior
+    - HFVAE concrete prior
 
 EVALUATION
 umap
