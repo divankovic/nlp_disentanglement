@@ -34,7 +34,7 @@ class VAETrainer:
                     if early_stopping(test_metrics['loss']):
                         self.logger.print('Patience limit reached. Stopping training...')
                         break
-                    else:
+                    elif early_stopping.counter == 0:
                         torch.save(self.experiment.model.state_dict(), model_save_path)
                         self.logger.print('Model saved at %s' % model_save_path)
 

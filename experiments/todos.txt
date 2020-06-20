@@ -16,6 +16,8 @@ use code for NPMI from 'topic_interpretability' repository - https://github.com/
     - wikipedia used as a reference corpus, could take up some time to calculate (~20min : from Coherence aware neural topic modeling)
 word distributions
 model training losses display
+y and z mutual information
+try out code for x,z mutual information
 ...
 
 other - GSM/GSB/RSB (from Discovering discrete latent topics with neural variational inference)
