@@ -88,11 +88,6 @@ class HFVAE(PTVAE):
 
         return losses
 
-    def mutual_info_by_components(self, q, p, **kwargs):
-        N = kwargs['N']
-        batch_size = kwargs['batch_size']
-
-
     # TODO - test this out
     def mutual_info_by_components(self, q, p, **kwargs):
         N = kwargs['N']
