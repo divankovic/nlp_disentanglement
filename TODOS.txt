@@ -4,9 +4,3 @@
 - dataset download + preprocessing script to get everything ready - also later, ok for now
 - add parameter grid search - not neccessary for now
 - print topics (top words) and coherence during training - little harder for coherence : CONSIDER LATER
-
-- Code organization
-    - organize evaluation
-        - tsne plot, npmi, ... - evaluate and save all results automatically - DONE
-        - extract all methods to functions first (some evaluation methods need some fine-tuning) - DONe
-        - automatic evaluation script for trained models - DONE

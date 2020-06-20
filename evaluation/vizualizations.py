@@ -45,7 +45,7 @@ def tsne_plot(zs, ys, labels, show=False, save_path=None, plot_by_class=True, **
             plt.savefig(os.path.join(save_path, 'tsne_by_class.png'))
 
 
-def correlation_plot(zs, show=False, save_path=None):
+def correlation_plot(zs, show=False, save_path=None, cutoff=0.075):
     cov_matrix = np.corrcoef(zs.T)
     if not show:
         import matplotlib
@@ -53,7 +53,7 @@ def correlation_plot(zs, show=False, save_path=None):
     plot_cov = cov_matrix
     for i in range(len(cov_matrix)):
         plot_cov[i, i] = np.nan
-    plot_cov[abs(plot_cov) < 0.075] = 0.0
+    plot_cov[abs(plot_cov) < cutoff] = 0.0
     plt.imshow(cov_matrix, cmap='inferno')
     # plt.imshow(cov_matrix, interpolation='None', cmap='hot')
     plt.title('z-correlation matrix')
