@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+
 root_folder = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(root_folder)
 import run
@@ -18,7 +19,7 @@ if __name__ == '__main__':
     print('Starting experiment grid from %s' % args.configs)
     configs = os.listdir(args.configs)
     for (i, config) in enumerate(configs):
-        print('Running experiment %d/%d' % (i+1, len(configs)))
-        run.main(['--config', args.configs+config])
+        print('Running experiment %d/%d' % (i + 1, len(configs)))
+        run.main(['--config', os.path.join(args.configs, config)])
 
     print('Experiments complete!')
