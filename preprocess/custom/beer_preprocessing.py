@@ -30,9 +30,9 @@ def beer_reader(path, max_len=0):
 
 if __name__ == '__main__':
     os.chdir('../..')
-    TRAIN_PATH = 'resources/datasets/beer_reviews/raw/reviews.260k.train.txt.gz'
-    TEST_PATH = 'resources/datasets/beer_reviews/raw/reviews.260k.heldout.txt.gz'
-    SAVE_PATH = 'resources/datasets/beer_reviews/'
+    TRAIN_PATH = 'resources/datasets/beer/raw/reviews.260k.train.txt.gz'
+    TEST_PATH = 'resources/datasets/beer/raw/reviews.260k.heldout.txt.gz'
+    SAVE_PATH = 'resources/datasets/beer/'
     CUTOFF = 3
     X_train, Y_train = beer_reader(TRAIN_PATH)
     X_test, Y_test = beer_reader(TEST_PATH)
