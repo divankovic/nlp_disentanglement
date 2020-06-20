@@ -134,13 +134,13 @@ class PTVAEXperiment(VAEXperiment):
     def train_dataloader(self):
         loader = super().train_dataloader()
         # needed for bias in probtorch models
-        self.train_len = len(loader)
+        self.train_len = len(loader.dataset)
         return loader
 
     def test_dataloader(self):
         loader = super().test_dataloader()
         # needed for bias in probtorch models
-        self.test_len = len(loader)
+        self.test_len = len(loader.dataset)
         return loader
 
 
