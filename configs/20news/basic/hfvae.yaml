@@ -15,14 +15,14 @@ model_parameters:
         num_groups : 2
         architecture : 'NVDM'
     spec:
-      beta: [4.0, 1.0, 1.0, 7.0, 0.0] # template (gamma, 1, alpha, beta, 0.0)
+      beta: [2.0, 1.0, 1.0, 10.0, 0.0] # template (gamma, 1, alpha, beta, 0.0)
 
 
 experiment_parameters:
   name : 'PTVAEXperiment'
   seed : 50
   dataset : 20news
-  data_path : 'resources/datasets/20news/1'
+  data_path : 'resources/datasets/20news/new'
   sparse: False
   labels: True
   save_path : 'results/base'

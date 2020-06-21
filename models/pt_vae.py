@@ -87,18 +87,3 @@ class HFVAE(PTVAE):
         losses['kl_to_prior(ii)'] = self.beta[1] * (log_avg_qzd_prod - log_avg_pzd_prod).mean()
 
         return losses
-
-    # TODO - test this out
-    def mutual_info_by_components(self, q, p, **kwargs):
-        N = kwargs['N']
-        batch_size = kwargs['batch_size']
-        bias = (N - 1) / (batch_size - 1)
-        sample_dim = 0
-        batch_dim = 1
-        z = [n for n in q.sampled() if n in p]
-        z = torch.cat(z, -1)
-        mis = []
-        for i in range(z.size()[-1]):
-            log_qz = q.log_joint(sample_dim, batch_dim, z[..., i])
-            log_joint_avg_qz, _, _ = q.log_batch_marginal(sample_dim, batch_dim, z[..., i], bias=bias)
-            mis.append((log_qz - log_joint_avg_qz).mean())

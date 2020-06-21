@@ -31,7 +31,7 @@ class VAETrainer:
                 test_metrics = self.test()
                 for k, v in test_metrics.items(): metrics['test'][k].append(v)
                 if early_stopping:
-                    if early_stopping(test_metrics['loss']):
+                    if early_stopping(test_metrics['loss'], self.logger):
                         self.logger.print('Patience limit reached. Stopping training...')
                         break
                     elif early_stopping.counter == 0:

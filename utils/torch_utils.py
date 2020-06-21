@@ -14,7 +14,7 @@ class EarlyStopping:
         self.min_loss = None
         self.delta = delta
 
-    def __call__(self, val_loss):
+    def __call__(self, val_loss, logger=None):
         if self.min_loss is None:
             self.min_loss = val_loss
             return False
@@ -24,6 +24,11 @@ class EarlyStopping:
             return False
         else:
             self.counter += 1
-            print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            if logger:
+                logger.print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            else:
+                print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+
             if self.counter >= self.patience:
                 return True
+            return False
