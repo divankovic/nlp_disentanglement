@@ -10,6 +10,7 @@ from utils.file_handling import MultiOutput
 from trainer import VAETrainer
 
 
+# TODO - add resume training option
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', '-c',

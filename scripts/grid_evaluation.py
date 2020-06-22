@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import matplotlib.pyplot as plt
 
 root_folder = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(root_folder)
@@ -15,6 +16,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print('Starting evaluation for models in directory %s' % args.glob_dir)
+
     models = os.listdir(args.glob_dir)
     for (i, model) in enumerate(models):
         print('Running evaluation for model %s,  %d/%d' % (model, i + 1, len(models)))

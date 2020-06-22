@@ -54,7 +54,7 @@ def correlation_plot(zs, show=False, save_path=None, cutoff=0.075):
     for i in range(len(cov_matrix)):
         plot_cov[i, i] = np.nan
     plot_cov[abs(plot_cov) < cutoff] = 0.0
-    plt.imshow(cov_matrix)
+    plt.imshow(cov_matrix, interpolation='None')
     # plt.imshow(cov_matrix, interpolation='None', cmap='hot')
     plt.title('z-correlation matrix')
     plt.colorbar()

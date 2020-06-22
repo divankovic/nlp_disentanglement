@@ -165,10 +165,11 @@ def npmi_coherence_score(topics, word_frequencies, joint_word_frequencies):
     return topic_coherences
 
 
-def get_most_correlated_topics(cov_matrix,top_correlations=4):
+def get_most_correlated_topics(cov_matrix, top_correlations=4):
     latent_dim = cov_matrix.shape[0]
     inds = np.dstack(np.unravel_index(np.argsort(cov_matrix.ravel()), (latent_dim, latent_dim)))[0]
     inds = inds[-latent_dim- top_correlations:-latent_dim, :]
+    # inds = inds[:top_correlations, :] # for least correlated
     covs = [cov_matrix[tuple(ind)] for ind in inds]
     cor_topics = sorted(set(inds.flatten()))
 

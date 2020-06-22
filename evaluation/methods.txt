@@ -3,7 +3,7 @@ mutual information I(x,z), I(y,z)
 HFVAE - topic coherence score (NPMI)
 vector similarity for classes (pico paper)
 latent traversal (changing one dimension of z - eth master thesis)
-classification accuracy using the latent space as features (non-parallel text style transfer paper)
+classification accuracy using the latent space as features (non-parallel text style transfer paper) ---- INTERESTING
 ablation testing (non-parallel text style transfer paper) - removing parts of the loss, inspecting changes
 
 NEW
