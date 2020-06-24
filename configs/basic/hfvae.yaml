@@ -6,14 +6,14 @@ model_parameters:
         hidden_dim : 500
         latent_dim : 50
         num_groups : 2
-        architecture : 'NVDM'
+        architecture : 'NTM'
     decoder :
         name : 'HFCDecoder'
         latent_dim : 50
         output_dim : 2000
         batch_size : 10
         num_groups : 2
-        architecture : 'NVDM'
+        architecture : 'NTM'
     spec:
       beta: [4.0, 1.0, 1.0, 7.0, 0.0] # template (gamma, 1, alpha, beta, 0.0)
 
@@ -22,8 +22,8 @@ experiment_parameters:
   name : 'PTVAEXperiment'
   seed : 50
   dataset : 20news
-  data_path : 'resources/datasets/20news/new'
-  sparse: True
+  data_path : 'resources/datasets/20news/1'
+  sparse: False
   labels: True
   save_path : 'results'
   batch_size : 10
