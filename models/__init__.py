@@ -9,6 +9,7 @@ from .architectures.decoders import rnn as rnn_decoders
 
 vae_models = {'VAE': BaseVAE,
               'NVDM': PTVAE,
+              'NTM': PTVAE,
               'HFVAE': HFVAE
               }
 

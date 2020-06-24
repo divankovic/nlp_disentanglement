@@ -23,7 +23,7 @@ class FCEncoder(nn.Module):
 
 class PTFCEncoder(FCEncoder):
     # tuned to work with probtorch
-    def __init__(self, input_dim, hidden_dim, latent_dim, architecture='NVDM', **kwargs):
+    def __init__(self, input_dim, hidden_dim, latent_dim, architecture='NTM', **kwargs):
         super().__init__(input_dim, hidden_dim, latent_dim)
         self.main = ARCHITECTURES[architecture](input_dim, hidden_dim)
 
@@ -40,7 +40,7 @@ class PTFCEncoder(FCEncoder):
 
 class HFCEncoder(PTFCEncoder):
     # for structured (hierarchical) 2d latent representations
-    def __init__(self, input_dim, hidden_dim, latent_dim, num_groups, architecture='NVDM', **kwargs):
+    def __init__(self, input_dim, hidden_dim, latent_dim, num_groups, architecture='NTM', **kwargs):
         super().__init__(input_dim, hidden_dim, latent_dim, architecture, **kwargs)
         if latent_dim % num_groups != 0:
             raise ValueError('Latent_dim must be disible by num_groups!')
@@ -71,6 +71,11 @@ ARCHITECTURES = {
         nn.ReLU()
     ),
     'NVDM': lambda input_dim, hidden_dim:
+    nn.Sequential(
+        nn.Linear(input_dim, hidden_dim),
+        nn.ReLU()
+    ),
+    'NTM': lambda input_dim, hidden_dim:
     nn.Sequential(
         nn.Linear(input_dim, hidden_dim),
         nn.ReLU()

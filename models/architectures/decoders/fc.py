@@ -18,7 +18,7 @@ class FCDecoder(nn.Module):
 
 class PTFCDecoder(nn.Module):
 
-    def __init__(self, latent_dim, output_dim, batch_size, architecture='NVDM', **kwargs):
+    def __init__(self, latent_dim, output_dim, batch_size, architecture='NTM', **kwargs):
         super().__init__()
         self.main = ARCHITECTURES[architecture](latent_dim, output_dim)
         self.prior_mean = torch.zeros((batch_size, latent_dim)).cuda().double()
@@ -35,7 +35,7 @@ class PTFCDecoder(nn.Module):
 
 class HFCDecoder(PTFCDecoder):
     # for structured (hierarchical) 2d latent representations
-    def __init__(self, latent_dim, output_dim, batch_size, num_groups, architecture='NVDM', **kwargs):
+    def __init__(self, latent_dim, output_dim, batch_size, num_groups, architecture='NTM', **kwargs):
         super().__init__(latent_dim, output_dim, batch_size, architecture, **kwargs)
         if latent_dim % num_groups != 0:
             raise ValueError('Latent_dim must be disible by num_groups!')
@@ -71,5 +71,19 @@ ARCHITECTURES = {
     nn.Sequential(
         nn.Linear(latent_dim, output_dim),
         nn.Softmax(dim=-1)
+    ),
+    'NTM': lambda latent_dim, output_dim:
+    nn.Sequential(
+        nn.ReLU(),
+        nn.Linear(latent_dim, output_dim),
+        nn.Softmax(dim=-1)
+    ),
+    'GSM': lambda latent_dim, output_dim:
+    nn.Sequential(
+        nn.Softmax(dim=-1),
+        nn.Linear(latent_dim, output_dim),
+        nn.Softmax(dim=-1)
     )
+
+
 }
