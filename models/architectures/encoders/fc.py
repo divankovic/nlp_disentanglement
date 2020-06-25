@@ -80,6 +80,11 @@ ARCHITECTURES = {
         nn.Linear(input_dim, hidden_dim),
         nn.ReLU()
     ),
+    'GSM': lambda input_dim, hidden_dim:
+    nn.Sequential(
+        nn.Linear(input_dim, hidden_dim),
+        nn.ReLU()
+    ),
     'NVDM+': lambda input_dim, hidden_dim:
     nn.Sequential(
         nn.Linear(input_dim, hidden_dim),
