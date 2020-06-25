@@ -81,7 +81,7 @@ ARCHITECTURES = {
     'GSM': lambda latent_dim, output_dim:
     nn.Sequential(
         nn.Softmax(dim=-1),
-        nn.Linear(latent_dim, output_dim),
+        nn.Linear(latent_dim, output_dim, bias=False),
         nn.Softmax(dim=-1)
     )
 
