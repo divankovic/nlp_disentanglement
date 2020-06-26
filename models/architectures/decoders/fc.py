@@ -2,6 +2,7 @@ import torch.nn as nn
 from torch import sigmoid
 import probtorch
 import torch
+from utils.torch_utils import ScaledSoftmax
 
 
 class FCDecoder(nn.Module):
@@ -23,6 +24,8 @@ class PTFCDecoder(nn.Module):
         self.main = ARCHITECTURES[architecture](latent_dim, output_dim)
         if architecture == 'GSM':
             torch.nn.init.uniform_(self.main[1].weight, a=0.0, b=10.0)  # will init to (0,1)
+        elif architecture == 'GSM_scale':
+            print('Using GSM_scale architecture!')
         self.prior_mean = torch.zeros((batch_size, latent_dim)).cuda().double()
         self.prior_cov = torch.eye(latent_dim).cuda().double()
 
@@ -83,6 +86,12 @@ ARCHITECTURES = {
     'GSM': lambda latent_dim, output_dim:
     nn.Sequential(
         nn.Softmax(dim=-1),
+        nn.Linear(latent_dim, output_dim, bias=False),
+        nn.Softmax(dim=-1)
+    ),
+    'GSM_scale': lambda latent_dim, output_dim:
+    nn.Sequential(
+        ScaledSoftmax(100),
         nn.Linear(latent_dim, output_dim, bias=False),
         nn.Softmax(dim=-1)
     )
