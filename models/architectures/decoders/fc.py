@@ -94,6 +94,14 @@ ARCHITECTURES = {
         ScaledSoftmax(100),
         nn.Linear(latent_dim, output_dim, bias=False),
         nn.Softmax(dim=-1)
+    ),
+    'GSM_BN': lambda latent_dim, output_dim:
+    nn.Sequential(
+        nn.Softmax(dim=-1),
+        nn.BatchNorm1d(latent_dim),
+        nn.Linear(latent_dim, output_dim, bias=False),
+        nn.BatchNorm1d(output_dim),
+        nn.Softmax(dim=-1)
     )
 
 }
