@@ -66,8 +66,9 @@ class HFCDecoder(PTFCDecoder):
         latents = torch.cat(zs, -1)
         if self.architecture == 'GSM_BN':
             latents = latents[0, :, :]
+            num_samples = z.shape[0]
         x_recon = self.main(latents)
-        if architecture == 'GSM_BN':
+        if self.architecture == 'GSM_BN':
             x_recon = x_recon.expand(num_samples, *x_recon.size())
         p.loss(lambda x_recon, x: -(torch.log(x_recon) * x).sum(-1), x_recon, x, name='x_recon')
         return p
