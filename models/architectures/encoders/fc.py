@@ -5,7 +5,7 @@ from probtorch.util import expand_inputs
 
 
 class FCEncoder(nn.Module):
-    def __init__(self, input_dim, hidden_dim, latent_dim, architecture='basic', **kwargs):
+    def __init__(self, input_dim, hidden_dim, latent_dim, architecture='NTM', **kwargs):
         super().__init__()
         self.latent_dim = latent_dim
         self.hidden_dim = hidden_dim
@@ -25,6 +25,7 @@ class PTFCEncoder(FCEncoder):
     # tuned to work with probtorch
     def __init__(self, input_dim, hidden_dim, latent_dim, architecture='NTM', **kwargs):
         super().__init__(input_dim, hidden_dim, latent_dim)
+        self.architecture = architecture
         self.main = ARCHITECTURES[architecture](input_dim, hidden_dim)
 
     @expand_inputs
@@ -45,7 +46,7 @@ class HFCEncoder(PTFCEncoder):
         if latent_dim % num_groups != 0:
             raise ValueError('Latent_dim must be disible by num_groups!')
         self.num_groups = num_groups
-        self.group_dim = int(self.latent_dim/self.num_groups)
+        self.group_dim = int(self.latent_dim / self.num_groups)
 
     @expand_inputs
     def forward(self, x, num_samples=1):

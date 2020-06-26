@@ -17,7 +17,7 @@ def main(args):
                         dest="config",
                         metavar='FILE',
                         help='path to the config file',
-                        default='configs/basic/hfvae2020.yaml')
+                        default='configs/20news/gsm/gsm.yaml')
     args = parser.parse_args(args)
     with open(args.config, 'r') as file:
         config = yaml.safe_load(file)

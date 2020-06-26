@@ -21,6 +21,8 @@ class PTFCDecoder(nn.Module):
     def __init__(self, latent_dim, output_dim, batch_size, architecture='NTM', **kwargs):
         super().__init__()
         self.main = ARCHITECTURES[architecture](latent_dim, output_dim)
+        if architecture == 'GSM':
+            torch.nn.init.uniform_(self.main[1].weight, a=0.0, b=10.0)  # will init to (0,1)
         self.prior_mean = torch.zeros((batch_size, latent_dim)).cuda().double()
         self.prior_cov = torch.eye(latent_dim).cuda().double()
 
@@ -54,7 +56,7 @@ class HFCDecoder(PTFCDecoder):
 
         latents = torch.cat(zs, -1)
         x_recon = self.main(latents)
-        p.loss(lambda x_recon, x: -(torch.log(x_recon)*x).sum(-1), x_recon, x, name='x_recon')
+        p.loss(lambda x_recon, x: -(torch.log(x_recon) * x).sum(-1), x_recon, x, name='x_recon')
         return p
 
 
@@ -69,13 +71,13 @@ ARCHITECTURES = {
     ),
     'NVDM': lambda latent_dim, output_dim:
     nn.Sequential(
-        nn.Linear(latent_dim, output_dim),
+        nn.Linear(latent_dim, output_dim, bias=False),
         nn.Softmax(dim=-1)
     ),
     'NTM': lambda latent_dim, output_dim:
     nn.Sequential(
         nn.ReLU(),
-        nn.Linear(latent_dim, output_dim),
+        nn.Linear(latent_dim, output_dim, bias=False),
         nn.Softmax(dim=-1)
     ),
     'GSM': lambda latent_dim, output_dim:
@@ -84,6 +86,5 @@ ARCHITECTURES = {
         nn.Linear(latent_dim, output_dim, bias=False),
         nn.Softmax(dim=-1)
     )
-
 
 }

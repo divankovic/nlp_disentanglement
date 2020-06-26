@@ -25,7 +25,7 @@ class BaseVAE(nn.Module):
     def sample_latent(self, x):
         mu, logvar = self.encode(x)
         z = reparametrize(mu, logvar)
-        return z
+        return z.cpu().detach().numpy(), mu.cpu().detach().numpy()
 
     def forward(self, x, **kwargs):
         mu, logvar = self.encode(x)
