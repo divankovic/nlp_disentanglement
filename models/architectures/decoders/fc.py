@@ -22,6 +22,7 @@ class PTFCDecoder(nn.Module):
     def __init__(self, latent_dim, output_dim, batch_size, architecture='NTM', **kwargs):
         super().__init__()
         self.main = ARCHITECTURES[architecture](latent_dim, output_dim)
+        self.architecture = architecture
         if architecture == 'GSM':
             torch.nn.init.uniform_(self.main[1].weight, a=0.0, b=10.0)  # will init to (0,1)
         elif architecture == 'GSM_scale':
@@ -32,7 +33,12 @@ class PTFCDecoder(nn.Module):
     def forward(self, x, q):
         p = probtorch.Trace()
         z = p.multivariate_normal(self.prior_mean, self.prior_cov, value=q['z'], name='z')
+        if self.architecture == 'GSM_BN':
+            num_samples = z.shape[0]
+            z = z[0, :, :]
         x_recon = self.main(z)
+        if self.architecture == 'GSM_BN':
+            x_recon = x_recon.expand(num_samples, *x_recon.size())
         p.loss(lambda x_recon, x: -(torch.log(x_recon) * x).sum(-1),
                x_recon, x, name='x_recon')
         return p
@@ -58,7 +64,11 @@ class HFCDecoder(PTFCDecoder):
             zs.append(z)
 
         latents = torch.cat(zs, -1)
+        if self.architecture == 'GSM_BN':
+            latents = latents[0, :, :]
         x_recon = self.main(latents)
+        if architecture == 'GSM_BN':
+            x_recon = x_recon.expand(num_samples, *x_recon.size())
         p.loss(lambda x_recon, x: -(torch.log(x_recon) * x).sum(-1), x_recon, x, name='x_recon')
         return p
 
