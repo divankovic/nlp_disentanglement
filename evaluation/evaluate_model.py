@@ -4,6 +4,7 @@ import sys
 import pickle
 
 import ruamel.yaml as yaml
+from scipy.special import softmax
 
 root_folder = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(root_folder)
@@ -43,23 +44,38 @@ def main(args):
     model.eval()
     experiment = experiments[config['experiment_parameters']['name']](model, config['experiment_parameters'])
     set_seed(config['experiment_parameters']['seed'])
+    dec_architecture = config['model_parameters']['decoder']['architecture']
 
     # start evaluation methods
-    zs, z_mus = experiment.sample_latent(experiment.test_dataloader())
-    ys = np.load(os.path.join(data_path, 'test.labels.npy'))[:zs.shape[0]]
-    labels = json.load(open(os.path.join(data_path, 'labels.json'), 'r'))
+    hs, z_mus = experiment.sample_latent(experiment.test_dataloader())
+    if dec_architecture == 'NVDM':
+        zs = hs
+    elif dec_architecture == 'NTM':
+        zs = np.maximum(0, hs)
+    elif dec_architecture == 'GSM_BN':
+        zs = softmax(hs, axis=-1)
+
+    # ys = np.load(os.path.join(data_path, 'test.labels.npy'))[:zs.shape[0]]
+    # labels = json.load(open(os.path.join(data_path, 'labels.json'), 'r'))
     # tsne_plot(zs, ys, labels, show=False, save_path=SAVE_PATH, plot_by_class=True,
     #          perplexity=10, learning_rate=200, n_iter=2000, n_jobs=-1)
     # consider early_exaggeration and init (pca)
 
     # correlation plot
-    correlation_plot(zs, show=False, save_path=SAVE_PATH)
+    correlation_plot(hs, show=False, save_path=SAVE_PATH, name='h')
+    correlation_plot(zs, show=False, save_path=SAVE_PATH, name='z')
 
     # topics
+    if dec_architecture == 'NVDM':
+        ind = 0
+    elif dec_architecture == 'NTM':
+        ind = 1
+    elif dec_architecture == 'GSM_BN':
+        ind = 2
     n_top = 10
     vocab = json.load(open(os.path.join(data_path, 'vocab.json'), 'r'))
     idx2word = {i: vocab[i] for i in range(len(vocab))}
-    beta = model.decoder.main[0].weight.cpu().detach().numpy().T
+    beta = model.decoder.main[ind].weight.cpu().detach().numpy().T
     topics = get_topics(beta, idx2word, n_top=n_top)
     print_top_words(beta, idx2word, n_top=n_top, save_path=os.path.join(SAVE_PATH, 'topics.txt'))
 
@@ -77,15 +93,24 @@ def main(args):
     print('Max: %f' % max(npmi_per_topic))
     print('Topic : %s' % (' '.join(topics[np.argmax(npmi_per_topic)])))
     # save results
-    json.dump({'npmi_per_topic': npmi_per_topic, 'avg_npmi': sum(npmi_per_topic) / len(npmi_per_topic),
+    json.dump({'npmi_per_topic': npmi_per_topic,
+               'top_10_avg': sum(sorted(npmi_per_topic)[-10:]) / 10,
+               'avg_npmi': sum(npmi_per_topic) / len(npmi_per_topic),
                'topics': topics},
               open(os.path.join(SAVE_PATH, 'npmi.json'), 'w'), indent=4)
 
-    # npmi for most correlated topics
-    if args.most_correlated:
-        inds, covs, cor_topics = get_most_correlated_topics(np.corrcoef(zs.T), top_correlations=4)
-        for topic in cor_topics:
-            print('%d %f %s' % (topic, npmi_per_topic[topic], topics[topic]))
+    # # npmi for most correlated topics
+    # if args.most_correlated:
+    #     inds, covs, cor_topics = get_most_correlated_topics(np.corrcoef(zs.T), top_correlations=4)
+    #     for topic in cor_topics:
+    #         print('%d %f %s' % (topic, npmi_per_topic[topic], topics[topic]))
+
+    z_mean_activations = np.mean(zs, axis=1)
+    show_topics = []
+    for i, topic in enumerate(topics):
+        show_topics.append({'words': ' '.join(topic), 'npmi': npmi_per_topic[i], 'z_activation': z_mean_activations[i]})
+    show_topics = sorted(show_topics, key=lambda topic: -topic['npmi'])
+    json.dump(show_topics, open(os.path.join(SAVE_PATH, 'show_topics.json'), 'w'), indent=4)
 
 
 if __name__ == '__main__':
