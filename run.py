@@ -17,7 +17,7 @@ def main(args):
                         dest="config",
                         metavar='FILE',
                         help='path to the config file',
-                        default='configs/20news/gsm/gsm.yaml')
+                        default='configs/20news/gsm/gsm105.yaml')
     args = parser.parse_args(args)
     with open(args.config, 'r') as file:
         config = yaml.safe_load(file)
