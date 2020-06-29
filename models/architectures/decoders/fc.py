@@ -4,6 +4,7 @@ import probtorch
 import torch
 from utils.torch_utils import ScaledSoftmax
 
+EPS = 1e-8
 
 class FCDecoder(nn.Module):
     def __init__(self, latent_dim, output_dim, architecture='basic', **kwargs):
@@ -35,7 +36,7 @@ class PTFCDecoder(nn.Module):
         x_recon = self.main(z)
         if self.architecture == 'GSM_BN':
             x_recon = x_recon.expand(num_samples, *x_recon.size())
-        p.loss(lambda x_recon, x: -(torch.log(x_recon) * x).sum(-1),
+        p.loss(lambda x_recon, x: -(torch.log(x_recon+EPS) * x).sum(-1),
                x_recon, x, name='x_recon')
         return p
 
@@ -66,7 +67,7 @@ class HFCDecoder(PTFCDecoder):
         x_recon = self.main(latents)
         if self.architecture == 'GSM_BN':
             x_recon = x_recon.expand(num_samples, *x_recon.size())
-        p.loss(lambda x_recon, x: -(torch.log(x_recon) * x).sum(-1), x_recon, x, name='x_recon')
+        p.loss(lambda x_recon, x: -(torch.log(x_recon+EPS) * x).sum(-1), x_recon, x, name='x_recon')
         return p
 
 
