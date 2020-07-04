@@ -63,6 +63,8 @@ The values in the brackets () indicate the values of &beta; and &gamma; in used 
 | GSM           | 0.23 | 0.22 |
 | +HFVAE(20,20) | 0.23 | 0.23 |
 | +HFVAE(10,5)  | **0.24** | **0.24** | 
+
+
 Some issues with the evaluation of some neural topic models were also identified and addressed.
 Finally, it has also been shown that the average topic NPMI is not a fully sufficient metric for evaluating topic models as it does not include all relevant factors, where proposing a new metric that does is left for future work.
 The methods show a promising future step for neural topic modeling and learning disentangled representations in NLP.
