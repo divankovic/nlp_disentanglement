@@ -20,7 +20,6 @@ class ConvDecoder(nn.Module):
         self.deconvs = nn.ModuleList(
             [nn.ConvTranspose2d(self.num_kernels, 1, (kernel_size, embedding_dim)) for kernel_size in
              self.kernel_sizes])
-        # TODO - finish this up
 
     def forward(self, x):
         return sigmoid(self.main(x))

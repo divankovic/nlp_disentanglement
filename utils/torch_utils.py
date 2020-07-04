@@ -34,12 +34,3 @@ class EarlyStopping:
             if self.counter >= self.patience:
                 return True
             return False
-
-
-class ScaledSoftmax(nn.Module):
-    def __init__(self, scale=100):
-        super().__init__()
-        self.scale = scale
-
-    def forward(self, input):
-        return nn.Softmax(-1)(input) * self.scale

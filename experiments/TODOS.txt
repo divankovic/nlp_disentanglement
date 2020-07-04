@@ -1,6 +1,0 @@
-- update repository README
-    - add installation instructions - last
-- document everything - last
-- dataset download + preprocessing script to get everything ready - also later, ok for now
-- add parameter grid search - not neccessary for now
-- print topics (top words) and coherence during training - little harder for coherence : CONSIDER LATER

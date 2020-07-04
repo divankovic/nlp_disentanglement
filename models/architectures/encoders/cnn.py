@@ -35,7 +35,6 @@ class ConvEncoder(nn.Module):
         return mu, logvar
 
 
-# TODO : replace this
 cnn_architectures = {
     'simpleconv': lambda nc, latent_dim:
     nn.Sequential(

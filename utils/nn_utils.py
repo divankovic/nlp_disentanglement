@@ -37,7 +37,6 @@ class View(nn.Module):
         return tensor.view(self.size)
 
 
-# TODO - alternatively - train own embeddings, or a nn embedding layer which is trained together with the network
 def load_embeddings(path, binary=True):
     model = gensim.models.KeyedVectors.load_word2vec_format(path, binary=binary)
     return model

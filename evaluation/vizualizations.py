@@ -8,7 +8,6 @@ from sklearn.manifold import TSNE
 def tsne_plot(zs, ys, labels, show=False, save_path=None, plot_by_class=True, **tsne_params):
     import warnings
     warnings.filterwarnings("ignore")
-    # TODO : MAKE PLOT PRETTIER : CUSTOMIZE COLORS,  ADD DIFFERENT SHAPES, ...
     # reducing zs to 2 dimensions using tsne. tsne parameters might need to be fine tuned
     # to achieve better results
     zs2 = TSNE(**tsne_params).fit_transform(zs)
